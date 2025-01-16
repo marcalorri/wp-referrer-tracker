@@ -2,8 +2,8 @@
 /**
  * Plugin Name: WP Referrer Tracker
  * Plugin URI: 
- * Description: Track referrer information and parse it into source, medium and campaign for any form plugin. Supports WPForms, Contact Form 7, Gravity Forms, and generic HTML forms.
- * Version: 1.2.0
+ * Description: Track referrer information and parse it into source, medium and campaign for any form plugin. Supports WPForms, Contact Form 7, Gravity Forms, and generic HTML forms with automatic code insertion.
+ * Version: 1.3.0
  * Author: WMS
  * Author URI: https://www.webmanagerservice.es
  * License: GPL v2 or later
@@ -15,7 +15,7 @@
  * - Campaign tracking via UTM parameters
  * - Paid vs Organic traffic detection
  * 
- * Supports major form plugins:
+ * Supports major form plugins with automatic implementation:
  * - WPForms
  * - Contact Form 7
  * - Gravity Forms
@@ -25,7 +25,8 @@
  * - Automatic form field insertion
  * - Custom field prefix configuration
  * - Plugin-specific implementation code generation
- * - Manual and automatic implementation methods
+ * - Automatic code insertion in functions.php
+ * - Automatic backup creation
  * - Comprehensive paid traffic detection
  * - International search engine support
  */
@@ -94,7 +95,7 @@ class WP_Referrer_Tracker {
      * Register the plugin settings and add fields to the settings page
      */
     public function register_settings() {
-        register_setting('wp_referrer_tracker', 'wrt_settings');
+        register_setting('wp_referrer_tracker', 'wrt_settings', array($this, 'validate_settings'));
         
         // Main Settings Section
         add_settings_section(
@@ -147,6 +148,15 @@ class WP_Referrer_Tracker {
             'wp-referrer-tracker',
             'wrt_code_section'
         );
+
+        // Auto Insert Code Setting
+        add_settings_field(
+            'wrt_auto_insert_code',
+            'Auto Insert Code in functions.php',
+            array($this, 'auto_insert_code_callback'),
+            'wp-referrer-tracker',
+            'wrt_code_section'
+        );
     }
 
     /**
@@ -159,7 +169,8 @@ class WP_Referrer_Tracker {
             'auto_fields' => true,
             'field_prefix' => 'wrt_',
             'form_plugin' => 'none',
-            'generate_code' => false
+            'generate_code' => false,
+            'auto_insert_code' => false
         ));
         ?>
         <input type="checkbox" name="wrt_settings[auto_fields]" 
@@ -178,7 +189,8 @@ class WP_Referrer_Tracker {
             'auto_fields' => true,
             'field_prefix' => 'wrt_',
             'form_plugin' => 'none',
-            'generate_code' => false
+            'generate_code' => false,
+            'auto_insert_code' => false
         ));
         ?>
         <input type="text" name="wrt_settings[field_prefix]" 
@@ -197,7 +209,8 @@ class WP_Referrer_Tracker {
             'auto_fields' => true,
             'field_prefix' => 'wrt_',
             'form_plugin' => 'none',
-            'generate_code' => false
+            'generate_code' => false,
+            'auto_insert_code' => false
         ));
 
         $plugins = array(
@@ -237,12 +250,234 @@ class WP_Referrer_Tracker {
             'auto_fields' => true,
             'field_prefix' => 'wrt_',
             'form_plugin' => 'none',
-            'generate_code' => false
+            'generate_code' => false,
+            'auto_insert_code' => false
         ));
 
         echo '<input type="checkbox" name="wrt_settings[generate_code]" ' . 
              checked($options['generate_code'], 1, false) . ' value="1">';
         echo '<p class="description">If checked, the plugin will display the code to add to your functions.php</p>';
+    }
+
+    /**
+     * Auto insert code callback
+     *
+     * Display the auto insert code setting
+     */
+    public function auto_insert_code_callback() {
+        $options = get_option('wrt_settings', array(
+            'auto_fields' => true,
+            'field_prefix' => 'wrt_',
+            'form_plugin' => 'none',
+            'generate_code' => false,
+            'auto_insert_code' => false
+        ));
+
+        echo '<input type="checkbox" name="wrt_settings[auto_insert_code]" ' . 
+             checked($options['auto_insert_code'], 1, false) . ' value="1">';
+        echo '<p class="description">If checked, the plugin will automatically insert/update the code in your theme\'s functions.php file</p>';
+        
+        // Mostrar advertencia si el archivo functions.php no es escribible
+        if (!$this->is_functions_writable()) {
+            echo '<p class="notice notice-warning" style="padding: 10px;">Warning: Your theme\'s functions.php file is not writable. Please check the file permissions.</p>';
+        }
+    }
+
+    /**
+     * Validate settings
+     *
+     * Validate the plugin settings and perform actions based on changes
+     */
+    public function validate_settings($input) {
+        $old_options = get_option('wrt_settings');
+        
+        // Si se activa la inserción automática y no estaba activada antes
+        if (!empty($input['auto_insert_code']) && empty($old_options['auto_insert_code'])) {
+            $this->insert_code_in_functions($input['form_plugin'], $input['field_prefix']);
+        }
+        // Si se cambia el plugin o el prefijo y la inserción automática está activa
+        elseif (!empty($input['auto_insert_code']) && 
+                ($input['form_plugin'] !== $old_options['form_plugin'] || 
+                 $input['field_prefix'] !== $old_options['field_prefix'])) {
+            $this->update_code_in_functions($input['form_plugin'], $input['field_prefix']);
+        }
+        // Si se desactiva la inserción automática
+        elseif (empty($input['auto_insert_code']) && !empty($old_options['auto_insert_code'])) {
+            $this->remove_code_from_functions();
+        }
+
+        return $input;
+    }
+
+    /**
+     * Check if functions.php is writable
+     *
+     * Check if the theme's functions.php file is writable
+     */
+    private function is_functions_writable() {
+        $functions_file = get_template_directory() . '/functions.php';
+        return file_exists($functions_file) && is_writable($functions_file);
+    }
+
+    /**
+     * Insert code in functions.php
+     *
+     * Insert the implementation code in the theme's functions.php file
+     */
+    private function insert_code_in_functions($plugin, $prefix) {
+        $functions_file = get_template_directory() . '/functions.php';
+        
+        if (!$this->is_functions_writable()) {
+            add_settings_error(
+                'wp_referrer_tracker',
+                'functions_not_writable',
+                'Could not write to functions.php. Please check file permissions.',
+                'error'
+            );
+            return false;
+        }
+
+        // Leer el contenido actual
+        $current_content = file_get_contents($functions_file);
+        
+        // Verificar si el código ya existe
+        if (strpos($current_content, '// WP Referrer Tracker Implementation Code') !== false) {
+            return false;
+        }
+
+        // Preparar el nuevo código
+        $new_code = "\n\n" . $this->get_implementation_code($plugin, $prefix);
+
+        // Hacer backup del archivo original
+        $backup_file = $functions_file . '.backup-' . date('Y-m-d-His');
+        copy($functions_file, $backup_file);
+
+        // Añadir el nuevo código al final del archivo
+        $success = file_put_contents($functions_file, $current_content . $new_code);
+
+        if (!$success) {
+            add_settings_error(
+                'wp_referrer_tracker',
+                'code_insert_failed',
+                'Failed to insert code in functions.php',
+                'error'
+            );
+            return false;
+        }
+
+        add_settings_error(
+            'wp_referrer_tracker',
+            'code_inserted',
+            'Code successfully inserted in functions.php',
+            'success'
+        );
+        return true;
+    }
+
+    /**
+     * Update code in functions.php
+     *
+     * Update the implementation code in the theme's functions.php file
+     */
+    private function update_code_in_functions($plugin, $prefix) {
+        $functions_file = get_template_directory() . '/functions.php';
+        
+        if (!$this->is_functions_writable()) {
+            add_settings_error(
+                'wp_referrer_tracker',
+                'functions_not_writable',
+                'Could not write to functions.php. Please check file permissions.',
+                'error'
+            );
+            return false;
+        }
+
+        // Leer el contenido actual
+        $current_content = file_get_contents($functions_file);
+        
+        // Hacer backup del archivo original
+        $backup_file = $functions_file . '.backup-' . date('Y-m-d-His');
+        copy($functions_file, $backup_file);
+
+        // Eliminar el código antiguo
+        $pattern = '/\/\/ WP Referrer Tracker Implementation Code.*?\}\);/s';
+        $new_content = preg_replace($pattern, '', $current_content);
+
+        // Añadir el nuevo código
+        $new_code = $this->get_implementation_code($plugin, $prefix);
+        $new_content .= "\n\n" . $new_code;
+
+        // Guardar los cambios
+        $success = file_put_contents($functions_file, $new_content);
+
+        if (!$success) {
+            add_settings_error(
+                'wp_referrer_tracker',
+                'code_update_failed',
+                'Failed to update code in functions.php',
+                'error'
+            );
+            return false;
+        }
+
+        add_settings_error(
+            'wp_referrer_tracker',
+            'code_updated',
+            'Code successfully updated in functions.php',
+            'success'
+        );
+        return true;
+    }
+
+    /**
+     * Remove code from functions.php
+     *
+     * Remove the implementation code from the theme's functions.php file
+     */
+    private function remove_code_from_functions() {
+        $functions_file = get_template_directory() . '/functions.php';
+        
+        if (!$this->is_functions_writable()) {
+            add_settings_error(
+                'wp_referrer_tracker',
+                'functions_not_writable',
+                'Could not write to functions.php. Please check file permissions.',
+                'error'
+            );
+            return false;
+        }
+
+        // Leer el contenido actual
+        $current_content = file_get_contents($functions_file);
+        
+        // Hacer backup del archivo original
+        $backup_file = $functions_file . '.backup-' . date('Y-m-d-His');
+        copy($functions_file, $backup_file);
+
+        // Eliminar el código
+        $pattern = '/\n*\/\/ WP Referrer Tracker Implementation Code.*?\}\);\n*/s';
+        $new_content = preg_replace($pattern, '', $current_content);
+
+        // Guardar los cambios
+        $success = file_put_contents($functions_file, $new_content);
+
+        if (!$success) {
+            add_settings_error(
+                'wp_referrer_tracker',
+                'code_remove_failed',
+                'Failed to remove code from functions.php',
+                'error'
+            );
+            return false;
+        }
+
+        add_settings_error(
+            'wp_referrer_tracker',
+            'code_removed',
+            'Code successfully removed from functions.php',
+            'success'
+        );
+        return true;
     }
 
     /**
@@ -758,7 +993,8 @@ class WP_Referrer_Tracker {
             'auto_fields' => true,
             'field_prefix' => 'wrt_',
             'form_plugin' => 'none',
-            'generate_code' => false
+            'generate_code' => false,
+            'auto_insert_code' => false
         ));
 
         // Pass cookie values and settings to JavaScript
