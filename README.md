@@ -1,8 +1,8 @@
-=== WP Referrer Tracker ===
+# Referrer Tracker for WP
 Contributors: marcalorri
 Tags: forms, tracking, analytics, referrer, utm
 Requires at least: 5.0
-Tested up to: 6.4
+Tested up to: 6.7
 Requires PHP: 7.2
 Stable tag: 1.4.2
 License: GPLv2 or later

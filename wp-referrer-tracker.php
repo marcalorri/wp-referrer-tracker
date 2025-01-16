@@ -1,39 +1,15 @@
 <?php
 /**
- * Plugin Name: WP Referrer Tracker
+ * Plugin Name: Referrer Tracker for WP
  * Plugin URI: https://github.com/marcalorri/wp-referrer-tracker
- * Description: Track referrer information and parse it into source, medium and campaign for any form plugin. Supports WPForms, Contact Form 7, Gravity Forms, and generic HTML forms.
+ * Description: Track and store referrer information in your WordPress forms
  * Version: 1.4.2
  * Author: Marçal Orri
- * Author URI: https://www.linkedin.com/in/marcalorri/
+ * Author URI: https://github.com/marcalorri
  * License: GPL v2 or later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: wp-referrer-tracker
- * 
- * This plugin tracks and categorizes referrer information, including:
- * - Traffic sources (Google, Facebook, Twitter, etc.)
- * - Traffic mediums (organic, cpc, social, email, referral)
- * - Campaign tracking via UTM parameters
- * - Paid vs Organic traffic detection
- * 
- * Key Features:
- * - Automatic field population
- * - UTM parameter tracking
- * - Multiple form plugin support
- * - Easy configuration options
- * - Debug logging
- * 
- * Form Plugin Support:
- * - Contact Form 7 (with auto-insert)
- * - WPForms
- * - Gravity Forms
- * - Generic HTML Forms
- * 
- * Technical Features:
- * - Cookie-based tracking
- * - Real-time field updates
- * - Automatic value detection
- * - Error prevention
- * - Debug logging
+ * Domain Path: /languages
  */
 
 if (!defined('ABSPATH')) {
@@ -112,10 +88,10 @@ class WP_Referrer_Tracker {
      */
     public function insert_tracking_code() {
         // Obtener los valores de las cookies de forma segura
-        $source = isset($_COOKIE['wrt_source']) ? sanitize_text_field(wp_unslash($_COOKIE['wrt_source'])) : '';
-        $medium = isset($_COOKIE['wrt_medium']) ? sanitize_text_field(wp_unslash($_COOKIE['wrt_medium'])) : '';
-        $campaign = isset($_COOKIE['wrt_campaign']) ? sanitize_text_field(wp_unslash($_COOKIE['wrt_campaign'])) : '';
-        $referrer = isset($_COOKIE['wrt_referrer']) ? esc_url_raw(wp_unslash($_COOKIE['wrt_referrer'])) : '';
+        $source = $this->get_source();
+        $medium = $this->get_medium();
+        $campaign = $this->get_campaign();
+        $referrer = $this->get_referrer();
 
         ?>
         <script>
@@ -505,15 +481,20 @@ class WP_Referrer_Tracker {
         $utm_medium = '';
         $utm_campaign = '';
         
-        // Verificar nonce si es necesario
-        if (isset($_GET['utm_source'])) {
-            $utm_source = sanitize_text_field(wp_unslash($_GET['utm_source']));
-        }
-        if (isset($_GET['utm_medium'])) {
-            $utm_medium = sanitize_text_field(wp_unslash($_GET['utm_medium']));
-        }
-        if (isset($_GET['utm_campaign'])) {
-            $utm_campaign = sanitize_text_field(wp_unslash($_GET['utm_campaign']));
+        // Solo procesar parámetros UTM si el nonce es válido
+        if ($this->verify_nonce()) {
+            if (isset($_GET['utm_source'])) {
+                $utm_source = sanitize_text_field(wp_unslash($_GET['utm_source']));
+            }
+            if (isset($_GET['utm_medium'])) {
+                $utm_medium = sanitize_text_field(wp_unslash($_GET['utm_medium']));
+            }
+            if (isset($_GET['utm_campaign'])) {
+                $utm_campaign = sanitize_text_field(wp_unslash($_GET['utm_campaign']));
+            }
+            $this->debug_log('UTM params procesados con nonce válido');
+        } else {
+            $this->debug_log('Nonce no válido o no presente, ignorando parámetros UTM');
         }
         
         $this->debug_log('UTM params - source: ' . $utm_source . ', medium: ' . $utm_medium . ', campaign: ' . $utm_campaign);
@@ -608,10 +589,15 @@ class WP_Referrer_Tracker {
             return $parsed;
         }
 
-        $referrer_host = parse_url($referrer, PHP_URL_HOST);
-        $current_host = parse_url(get_site_url(), PHP_URL_HOST);
-        $referrer_path = parse_url($referrer, PHP_URL_PATH);
-        $query = parse_url($referrer, PHP_URL_QUERY);
+        // Analizar la URL del referrer
+        $parsed_referrer = wp_parse_url($referrer);
+        $referrer_host = isset($parsed_referrer['host']) ? $parsed_referrer['host'] : '';
+        
+        $parsed_current = wp_parse_url(get_site_url());
+        $current_host = isset($parsed_current['host']) ? $parsed_current['host'] : '';
+        
+        $referrer_path = isset($parsed_referrer['path']) ? $parsed_referrer['path'] : '';
+        $query = isset($parsed_referrer['query']) ? $parsed_referrer['query'] : '';
         parse_str($query ?? '', $params);
 
         // Check if it's an internal referrer
@@ -888,10 +874,10 @@ class WP_Referrer_Tracker {
 
         // Pass cookie values and settings to JavaScript
         $referrer_data = array(
-            'source' => isset($_COOKIE['wrt_source']) ? $_COOKIE['wrt_source'] : '',
-            'medium' => isset($_COOKIE['wrt_medium']) ? $_COOKIE['wrt_medium'] : '',
-            'campaign' => isset($_COOKIE['wrt_campaign']) ? $_COOKIE['wrt_campaign'] : '',
-            'referrer' => isset($_COOKIE['wrt_referrer']) ? $_COOKIE['wrt_referrer'] : '',
+            'source' => $this->get_source(),
+            'medium' => $this->get_medium(),
+            'campaign' => $this->get_campaign(),
+            'referrer' => $this->get_referrer(),
             'settings' => array(
                 'autoFields' => $options['auto_fields'],
                 'fieldPrefix' => $options['field_prefix']
@@ -909,7 +895,10 @@ class WP_Referrer_Tracker {
      * @return string The source value
      */
     private function get_source() {
-        return $_COOKIE['wrt_source'] ?? '';
+        if (!isset($_COOKIE['wrt_source'])) {
+            return '';
+        }
+        return sanitize_text_field(wp_unslash($_COOKIE['wrt_source']));
     }
 
     /**
@@ -920,7 +909,10 @@ class WP_Referrer_Tracker {
      * @return string The medium value
      */
     private function get_medium() {
-        return $_COOKIE['wrt_medium'] ?? '';
+        if (!isset($_COOKIE['wrt_medium'])) {
+            return '';
+        }
+        return sanitize_text_field(wp_unslash($_COOKIE['wrt_medium']));
     }
 
     /**
@@ -931,7 +923,10 @@ class WP_Referrer_Tracker {
      * @return string The campaign value
      */
     private function get_campaign() {
-        return $_COOKIE['wrt_campaign'] ?? '';
+        if (!isset($_COOKIE['wrt_campaign'])) {
+            return '';
+        }
+        return sanitize_text_field(wp_unslash($_COOKIE['wrt_campaign']));
     }
 
     /**
@@ -942,16 +937,32 @@ class WP_Referrer_Tracker {
      * @return string The referrer value
      */
     private function get_referrer() {
-        return $_COOKIE['wrt_referrer'] ?? '';
+        if (!isset($_COOKIE['wrt_referrer'])) {
+            return '';
+        }
+        return esc_url_raw(wp_unslash($_COOKIE['wrt_referrer']));
     }
 
     /**
      * Debug logging
      */
     private function debug_log($message) {
-        if (defined('WP_DEBUG') && WP_DEBUG === true) {
+        if (defined('WP_DEBUG') && WP_DEBUG === true && defined('WP_DEBUG_LOG') && WP_DEBUG_LOG === true) {
+            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
             error_log('WRT: ' . $message);
         }
+    }
+
+    /**
+     * Verify nonce for form data
+     */
+    private function verify_nonce() {
+        if (!isset($_REQUEST['_wpnonce'])) {
+            return false;
+        }
+        
+        $nonce = sanitize_text_field(wp_unslash($_REQUEST['_wpnonce']));
+        return wp_verify_nonce($nonce, 'wrt_form_action');
     }
 }
 
