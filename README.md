@@ -1,34 +1,14 @@
 # WP Referrer Tracker
 
-A WordPress plugin that tracks and analyzes referrer information, providing detailed insights about traffic sources, mediums, and campaigns. Perfect for marketing analytics and lead tracking.
+Track and categorize referrer information in WordPress forms. Supports WPForms, Contact Form 7, Gravity Forms, and generic HTML forms.
 
 ## Features
 
-- **Advanced Traffic Source Detection**
-  - Differentiates between organic and paid traffic
-  - Supports all major search engines
-  - Identifies social media platforms
-  - Detects email providers
-  - Tracks referral websites
-
-- **Multiple Form Plugin Support**
-  - WPForms
-  - Contact Form 7
-  - Gravity Forms
-  - Generic HTML Forms
-
-- **Smart Implementation**
-  - Fully automatic code insertion
-  - Automatic backup creation
-  - Safe code updates
-  - Plugin-specific optimizations
-  - Custom field prefix support
-
-- **Comprehensive Traffic Analysis**
-  - Source identification (Google, Facebook, Twitter, etc.)
-  - Medium categorization (organic, cpc, social, email, referral)
-  - Campaign tracking (UTM parameters)
-  - Paid traffic detection
+- Automatic referrer tracking
+- UTM parameter parsing
+- Multiple form plugin support
+- Cookie-based tracking
+- Debug logging
 
 ## Installation
 
@@ -38,58 +18,25 @@ A WordPress plugin that tracks and analyzes referrer information, providing deta
 
 ## Configuration
 
-In the WordPress admin panel, go to Settings > WP Referrer Tracker to configure the plugin:
+1. Select your form plugin (WPForms, Contact Form 7, etc.)
+2. Configure your field prefix (default: wrt_)
+3. For Contact Form 7: Enable "Auto-insert Hidden Fields" to automatically add tracking fields
+4. Save changes
 
-1. **Auto-insert Hidden Fields**: Enable/disable automatic insertion of tracking fields.
-2. **Field Prefix**: Set a custom prefix for field names (default: wrt_).
-3. **Form Plugin**: Select your form plugin to get specific implementation code:
-   - WPForms
-   - Contact Form 7
-   - Gravity Forms
-   - Generic HTML Forms
-4. **Generate Code**: Enable this option to display the JavaScript code.
-5. **Auto Insert Code**: Enable this option to automatically insert/update the code in your theme's functions.php file.
+The plugin will show you specific implementation instructions for your selected form plugin.
 
-### Implementation Methods
+## Usage
 
-You can implement the tracking in three ways:
+### Contact Form 7
 
-1. **Fully Automatic Implementation** (Recommended):
-   - Select your form plugin in the settings
-   - Enable "Auto Insert Code"
-   - The plugin will automatically:
-     * Insert the required code in functions.php
-     * Create a backup of your original file
-     * Update the code when settings change
-     * Remove the code when disabled
+Two ways to implement:
 
-2. **Semi-Automatic Implementation**:
-   - Select your form plugin in the settings
-   - Enable "Generate Code"
-   - Copy the generated code to your theme's functions.php file manually
+1. **Automatic Implementation**:
+   - Enable "Auto-insert Hidden Fields" in plugin settings
+   - Fields will be added automatically to all CF7 forms
 
-3. **Manual Implementation**:
- Follow the instructions below based on your form plugin:
-
-#### WPForms
-
-1. Add Hidden fields to your form:
-   - {prefix}source
-   - {prefix}medium
-   - {prefix}campaign
-   - {prefix}referrer
-
-2. In Advanced Field Options, set JavaScript value:
-```javascript
-return getReferrerValue('source');   // For source field
-return getReferrerValue('medium');   // For medium field
-return getReferrerValue('campaign'); // For campaign field
-return getReferrerValue('referrer'); // For referrer field
-```
-
-#### Contact Form 7
-
-Add these hidden fields to your form:
+2. **Manual Implementation**:
+   Add these hidden fields to your form:
 ```
 [hidden wrt_source class:js-wrt-source ""]
 [hidden wrt_medium class:js-wrt-medium ""]
@@ -97,44 +44,120 @@ Add these hidden fields to your form:
 [hidden wrt_referrer class:js-wrt-referrer ""]
 ```
 
-#### Gravity Forms
+Important notes for Contact Form 7:
+1. The field names must use underscore (e.g., `wrt_source`)
+2. The classes must use hyphen (e.g., `js-wrt-source`)
+3. Leave the default value empty (`""`)
 
-1. Add Hidden fields to your form
-2. Enable "Allow field to be populated dynamically"
-3. Set Parameter Names:
-   - wrt_source
-   - wrt_medium
-   - wrt_campaign
-   - wrt_referrer
+### WPForms
 
-#### Generic HTML Forms
+1. Go to your form editor
+2. Add 4 "Hidden Field" elements
+3. Configure each field:
+   - Source: name=wrt_source, class=js-wrt-source
+   - Medium: name=wrt_medium, class=js-wrt-medium
+   - Campaign: name=wrt_campaign, class=js-wrt-campaign
+   - Referrer: name=wrt_referrer, class=js-wrt-referrer
 
-Add hidden fields to your form:
+### Gravity Forms
+
+1. Go to your form editor
+2. Add 4 "Hidden" fields
+3. Configure each field:
+   - Source: name=wrt_source, class=js-wrt-source
+   - Medium: name=wrt_medium, class=js-wrt-medium
+   - Campaign: name=wrt_campaign, class=js-wrt-campaign
+   - Referrer: name=wrt_referrer, class=js-wrt-referrer
+
+### Generic HTML Forms
+
+Add these hidden fields to your form:
 ```html
-<input type="hidden" name="wrt_source" id="wrt_source">
-<input type="hidden" name="wrt_medium" id="wrt_medium">
-<input type="hidden" name="wrt_campaign" id="wrt_campaign">
-<input type="hidden" name="wrt_referrer" id="wrt_referrer">
+<input type="hidden" name="wrt_source" class="js-wrt-source" value="">
+<input type="hidden" name="wrt_medium" class="js-wrt-medium" value="">
+<input type="hidden" name="wrt_campaign" class="js-wrt-campaign" value="">
+<input type="hidden" name="wrt_referrer" class="js-wrt-referrer" value="">
 ```
 
-### Safety Features
+## Debugging
 
-The plugin includes several safety features for automatic code insertion:
+If fields are not being populated, check:
 
-1. **Automatic Backups**:
-   - Creates a backup of functions.php before any modification
-   - Backup files are named with timestamp (e.g., functions.php.backup-2025-01-16-123456)
+1. Enable WordPress debug logging:
+   ```php
+   // Add to wp-config.php
+   define('WP_DEBUG', true);
+   define('WP_DEBUG_LOG', true);
+   ```
 
-2. **Permission Checks**:
-   - Verifies if functions.php is writable
-   - Shows warnings if permissions are incorrect
-
-3. **Safe Updates**:
-   - Validates code before insertion
-   - Maintains existing functionality
-   - Clean removal when disabled
+2. Check `wp-content/debug.log` for messages starting with "WRT:"
+   - Cookie setting/getting
+   - Field updates
+   - Referrer detection
 
 ## Changelog
+
+### 1.4.2
+- Fixed Auto-insert Hidden Fields functionality for Contact Form 7
+- Improved cookie handling and value detection
+- Added detailed debug logging
+- Enhanced field value updates
+- Updated documentation with debugging instructions
+
+### 1.4.1
+- Added detailed implementation instructions
+- Improved field value handling
+- Added debug logging support
+- Enhanced error prevention
+
+### 1.4.0
+- Complete architectural overhaul
+- Switched to dynamic code injection
+- Removed file system modifications
+- Added proper WordPress hooks
+
+### 1.3.7
+- Fixed Contact Form 7 field updates:
+  - Corrected class name format (using hyphens)
+  - Added debug logging for field updates
+  - Fixed duplicate code injection
+  - Added function existence check
+
+### 1.3.6
+- Completely rewrote Contact Form 7 integration:
+  - Fixed field class naming convention
+  - Simplified JavaScript code structure
+  - Improved field value updates
+  - Better error prevention
+- Enhanced documentation:
+  - Added detailed CF7 implementation notes
+  - Clarified field naming requirements
+  - Added important usage notes
+  - Updated troubleshooting guide
+
+### 1.3.5
+- Fixed Contact Form 7 field value updates:
+  - Changed class selector to match CF7 structure
+  - Simplified DOM manipulation
+  - Direct value updates on fields
+  - Improved documentation for CF7 implementation
+- Enhanced field handling:
+  - More efficient field selection
+  - Better class naming convention
+  - Immediate value updates
+  - Clearer implementation instructions
+
+### 1.3.4
+- Fixed script generation in functions.php:
+  - Removed PHP output buffering
+  - Using pure string concatenation
+  - Fixed double wp_footer action
+  - Fixed script variable handling
+- Improved code stability:
+  - No more PHP tag switching
+  - Better escaping of quotes
+  - More reliable script output
+  - Fixed variable assignment issues
 
 ### 1.3.3
 - Fixed PHP tag handling in functions.php:

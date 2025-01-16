@@ -2,8 +2,8 @@
 /**
  * Plugin Name: WP Referrer Tracker
  * Plugin URI: 
- * Description: Track referrer information and parse it into source, medium and campaign for any form plugin. Supports WPForms, Contact Form 7, Gravity Forms, and generic HTML forms with automatic code insertion.
- * Version: 1.3.3
+ * Description: Track referrer information and parse it into source, medium and campaign for any form plugin. Supports WPForms, Contact Form 7, Gravity Forms, and generic HTML forms.
+ * Version: 1.4.2
  * Author: WMS
  * Author URI: https://www.webmanagerservice.es
  * License: GPL v2 or later
@@ -15,27 +15,25 @@
  * - Campaign tracking via UTM parameters
  * - Paid vs Organic traffic detection
  * 
- * Supports major form plugins with automatic implementation:
+ * Key Features:
+ * - Automatic field population
+ * - UTM parameter tracking
+ * - Multiple form plugin support
+ * - Easy configuration options
+ * - Debug logging
+ * 
+ * Form Plugin Support:
+ * - Contact Form 7 (with auto-insert)
  * - WPForms
- * - Contact Form 7
  * - Gravity Forms
  * - Generic HTML Forms
  * 
- * Features:
- * - Automatic form field insertion
- * - Custom field prefix configuration
- * - Plugin-specific implementation code generation
- * - Clean PHP code generation
- * - Automatic backup creation
- * - Comprehensive paid traffic detection
- * - International search engine support
- * 
- * Safety Features:
- * - Smart code placement detection
- * - Automatic backup before any modification
- * - Proper PHP tag handling
- * - Safe code updates and removal
- * - Error handling and user notifications
+ * Technical Features:
+ * - Cookie-based tracking
+ * - Real-time field updates
+ * - Automatic value detection
+ * - Error prevention
+ * - Debug logging
  */
 
 if (!defined('ABSPATH')) {
@@ -78,7 +76,96 @@ class WP_Referrer_Tracker {
      * Set up cookies and initialize the plugin
      */
     public function init() {
-        $this->setup_cookies();
+        add_action('admin_init', array($this, 'register_settings'));
+        add_action('admin_menu', array($this, 'add_admin_menu'));
+        
+        // Insertar el código de tracking
+        add_action('wp_footer', array($this, 'insert_tracking_code'));
+
+        // Si está activada la inserción automática de campos
+        if (get_option('wrt_settings')['auto_fields']) {
+            add_filter('wpcf7_form_elements', array($this, 'add_hidden_fields_cf7'));
+        }
+        
+        // Initialize tracking
+        $this->init_tracking();
+    }
+
+    /**
+     * Añadir campos ocultos a Contact Form 7
+     */
+    public function add_hidden_fields_cf7($elements) {
+        $prefix = get_option('wrt_settings')['field_prefix'];
+        
+        $hidden_fields = "
+[hidden {$prefix}source class:js-wrt-source \"\"]
+[hidden {$prefix}medium class:js-wrt-medium \"\"]
+[hidden {$prefix}campaign class:js-wrt-campaign \"\"]
+[hidden {$prefix}referrer class:js-wrt-referrer \"\"]
+";
+        
+        return $elements . $hidden_fields;
+    }
+
+    /**
+     * Insertar el código de tracking
+     */
+    public function insert_tracking_code() {
+        // Obtener los valores de las cookies
+        $source = isset($_COOKIE['wrt_source']) ? $_COOKIE['wrt_source'] : '';
+        $medium = isset($_COOKIE['wrt_medium']) ? $_COOKIE['wrt_medium'] : '';
+        $campaign = isset($_COOKIE['wrt_campaign']) ? $_COOKIE['wrt_campaign'] : '';
+        $referrer = isset($_COOKIE['wrt_referrer']) ? $_COOKIE['wrt_referrer'] : '';
+
+        ?>
+        <script>
+        // Valores de referrer
+        var wrtValues = {
+            source: <?php echo json_encode($source); ?>,
+            medium: <?php echo json_encode($medium); ?>,
+            campaign: <?php echo json_encode($campaign); ?>,
+            referrer: <?php echo json_encode($referrer); ?>
+        };
+
+        // Función para actualizar campos
+        function wrtUpdateFields() {
+            console.log('WRT: Actualizando campos con valores:', wrtValues);
+            
+            // Actualizar campos por clase
+            document.querySelectorAll('.js-wrt-source').forEach(function(el) {
+                el.value = wrtValues.source;
+                console.log('WRT: Campo source actualizado:', el.value);
+            });
+            
+            document.querySelectorAll('.js-wrt-medium').forEach(function(el) {
+                el.value = wrtValues.medium;
+                console.log('WRT: Campo medium actualizado:', el.value);
+            });
+            
+            document.querySelectorAll('.js-wrt-campaign').forEach(function(el) {
+                el.value = wrtValues.campaign;
+                console.log('WRT: Campo campaign actualizado:', el.value);
+            });
+            
+            document.querySelectorAll('.js-wrt-referrer').forEach(function(el) {
+                el.value = wrtValues.referrer;
+                console.log('WRT: Campo referrer actualizado:', el.value);
+            });
+        }
+
+        // Actualizar campos cuando el DOM está listo
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('WRT: DOM cargado, actualizando campos...');
+            wrtUpdateFields();
+        });
+
+        // Actualizar campos antes de enviar el formulario CF7
+        document.addEventListener('wpcf7submit', function() {
+            console.log('WRT: Formulario enviado, actualizando campos...');
+            wrtUpdateFields();
+        });
+        </script>
+        <?php
     }
 
     /**
@@ -92,452 +179,23 @@ class WP_Referrer_Tracker {
             'Referrer Tracker',
             'manage_options',
             'wp-referrer-tracker',
-            array($this, 'settings_page')
+            array($this, 'display_settings_page')
         );
     }
 
     /**
-     * Register settings
-     *
-     * Register the plugin settings and add fields to the settings page
+     * Display the plugin settings page
      */
-    public function register_settings() {
-        register_setting('wp_referrer_tracker', 'wrt_settings', array($this, 'validate_settings'));
-        
-        // Main Settings Section
-        add_settings_section(
-            'wrt_main_section',
-            'Main Settings',
-            null,
-            'wp-referrer-tracker'
-        );
-
-        // Auto Fields Setting
-        add_settings_field(
-            'wrt_auto_fields',
-            'Auto-insert Hidden Fields',
-            array($this, 'auto_fields_callback'),
-            'wp-referrer-tracker',
-            'wrt_main_section'
-        );
-
-        // Field Prefix Setting
-        add_settings_field(
-            'wrt_field_prefix',
-            'Field Prefix',
-            array($this, 'field_prefix_callback'),
-            'wp-referrer-tracker',
-            'wrt_main_section'
-        );
-
-        // Form Plugin Selection
-        add_settings_field(
-            'wrt_form_plugin',
-            'Form Plugin',
-            array($this, 'form_plugin_callback'),
-            'wp-referrer-tracker',
-            'wrt_main_section'
-        );
-
-        // Code Generation Section
-        add_settings_section(
-            'wrt_code_section',
-            'Code Generation',
-            array($this, 'code_section_callback'),
-            'wp-referrer-tracker'
-        );
-
-        // Generate Code Setting
-        add_settings_field(
-            'wrt_generate_code',
-            'Generate Code for functions.php',
-            array($this, 'generate_code_callback'),
-            'wp-referrer-tracker',
-            'wrt_code_section'
-        );
-
-        // Auto Insert Code Setting
-        add_settings_field(
-            'wrt_auto_insert_code',
-            'Auto Insert Code in functions.php',
-            array($this, 'auto_insert_code_callback'),
-            'wp-referrer-tracker',
-            'wrt_code_section'
-        );
-    }
-
-    /**
-     * Auto fields callback
-     *
-     * Display the auto fields setting
-     */
-    public function auto_fields_callback() {
-        $options = get_option('wrt_settings', array(
-            'auto_fields' => true,
-            'field_prefix' => 'wrt_',
-            'form_plugin' => 'none',
-            'generate_code' => false,
-            'auto_insert_code' => false
-        ));
-        ?>
-        <input type="checkbox" name="wrt_settings[auto_fields]" 
-               <?php checked($options['auto_fields'], 1); ?> value="1">
-        <p class="description">If checked, hidden fields will be automatically inserted into forms</p>
-        <?php
-    }
-
-    /**
-     * Field prefix callback
-     *
-     * Display the field prefix setting
-     */
-    public function field_prefix_callback() {
-        $options = get_option('wrt_settings', array(
-            'auto_fields' => true,
-            'field_prefix' => 'wrt_',
-            'form_plugin' => 'none',
-            'generate_code' => false,
-            'auto_insert_code' => false
-        ));
-        ?>
-        <input type="text" name="wrt_settings[field_prefix]" 
-               value="<?php echo esc_attr($options['field_prefix']); ?>">
-        <p class="description">Prefix for automatically inserted field names (e.g., wrt_source)</p>
-        <?php
-    }
-
-    /**
-     * Form plugin callback
-     *
-     * Display the form plugin selection
-     */
-    public function form_plugin_callback() {
-        $options = get_option('wrt_settings', array(
-            'auto_fields' => true,
-            'field_prefix' => 'wrt_',
-            'form_plugin' => 'none',
-            'generate_code' => false,
-            'auto_insert_code' => false
-        ));
-
-        $plugins = array(
-            'none' => 'None (Manual Implementation)',
-            'wpforms' => 'WPForms',
-            'cf7' => 'Contact Form 7',
-            'gravity' => 'Gravity Forms',
-            'generic' => 'Generic HTML Forms'
-        );
-
-        echo '<select name="wrt_settings[form_plugin]">';
-        foreach ($plugins as $value => $label) {
-            echo '<option value="' . esc_attr($value) . '" ' . 
-                 selected($options['form_plugin'], $value, false) . '>' . 
-                 esc_html($label) . '</option>';
-        }
-        echo '</select>';
-        echo '<p class="description">Select your form plugin to get specific implementation code</p>';
-    }
-
-    /**
-     * Code section callback
-     *
-     * Display the code generation section
-     */
-    public function code_section_callback() {
-        echo '<p>Generate implementation code for your selected form plugin.</p>';
-    }
-
-    /**
-     * Generate code callback
-     *
-     * Display the generate code setting
-     */
-    public function generate_code_callback() {
-        $options = get_option('wrt_settings', array(
-            'auto_fields' => true,
-            'field_prefix' => 'wrt_',
-            'form_plugin' => 'none',
-            'generate_code' => false,
-            'auto_insert_code' => false
-        ));
-
-        echo '<input type="checkbox" name="wrt_settings[generate_code]" ' . 
-             checked($options['generate_code'], 1, false) . ' value="1">';
-        echo '<p class="description">If checked, the plugin will display the code to add to your functions.php</p>';
-    }
-
-    /**
-     * Auto insert code callback
-     *
-     * Display the auto insert code setting
-     */
-    public function auto_insert_code_callback() {
-        $options = get_option('wrt_settings', array(
-            'auto_fields' => true,
-            'field_prefix' => 'wrt_',
-            'form_plugin' => 'none',
-            'generate_code' => false,
-            'auto_insert_code' => false
-        ));
-
-        echo '<input type="checkbox" name="wrt_settings[auto_insert_code]" ' . 
-             checked($options['auto_insert_code'], 1, false) . ' value="1">';
-        echo '<p class="description">If checked, the plugin will automatically insert/update the code in your theme\'s functions.php file</p>';
-        
-        // Mostrar advertencia si el archivo functions.php no es escribible
-        if (!$this->is_functions_writable()) {
-            echo '<p class="notice notice-warning" style="padding: 10px;">Warning: Your theme\'s functions.php file is not writable. Please check the file permissions.</p>';
-        }
-    }
-
-    /**
-     * Validate settings
-     *
-     * Validate the plugin settings and perform actions based on changes
-     */
-    public function validate_settings($input) {
-        $old_options = get_option('wrt_settings');
-        
-        // Si se activa la inserción automática y no estaba activada antes
-        if (!empty($input['auto_insert_code']) && empty($old_options['auto_insert_code'])) {
-            $this->insert_code_in_functions($input['form_plugin'], $input['field_prefix']);
-        }
-        // Si se cambia el plugin o el prefijo y la inserción automática está activa
-        elseif (!empty($input['auto_insert_code']) && 
-                ($input['form_plugin'] !== $old_options['form_plugin'] || 
-                 $input['field_prefix'] !== $old_options['field_prefix'])) {
-            $this->update_code_in_functions($input['form_plugin'], $input['field_prefix']);
-        }
-        // Si se desactiva la inserción automática
-        elseif (empty($input['auto_insert_code']) && !empty($old_options['auto_insert_code'])) {
-            $this->remove_code_from_functions();
-        }
-
-        return $input;
-    }
-
-    /**
-     * Check if functions.php is writable
-     *
-     * Check if the theme's functions.php file is writable
-     */
-    private function is_functions_writable() {
-        $functions_file = get_template_directory() . '/functions.php';
-        return file_exists($functions_file) && is_writable($functions_file);
-    }
-
-    /**
-     * Insert code in functions.php
-     *
-     * Insert the implementation code in the theme's functions.php file
-     */
-    private function insert_code_in_functions($plugin, $prefix) {
-        $functions_file = get_template_directory() . '/functions.php';
-        
-        if (!$this->is_functions_writable()) {
-            add_settings_error(
-                'wp_referrer_tracker',
-                'functions_not_writable',
-                'Could not write to functions.php. Please check file permissions.',
-                'error'
-            );
-            return false;
-        }
-
-        // Leer el contenido actual
-        $current_content = file_get_contents($functions_file);
-        
-        // Verificar si el código ya existe
-        if (strpos($current_content, '// WP Referrer Tracker Implementation Code') !== false) {
-            return $this->update_code_in_functions($plugin, $prefix);
-        }
-
-        // Hacer backup del archivo original
-        $backup_file = $functions_file . '.backup-' . date('Y-m-d-His');
-        if (!copy($functions_file, $backup_file)) {
-            add_settings_error(
-                'wp_referrer_tracker',
-                'backup_failed',
-                'Failed to create backup of functions.php',
-                'error'
-            );
-            return false;
-        }
-
-        // Encontrar el último add_action o add_filter
-        if (preg_match_all('/add_(action|filter)\s*\([^;]+;\s*$/m', $current_content, $matches, PREG_OFFSET_CAPTURE)) {
-            $last_hook = end($matches[0]);
-            $position = $last_hook[1] + strlen($last_hook[0]);
-            
-            // Dividir el contenido
-            $before = substr($current_content, 0, $position);
-            $after = substr($current_content, $position);
-            
-            // Preparar el nuevo código
-            $new_code = $this->get_implementation_code($plugin, $prefix);
-            
-            // Reconstruir el archivo
-            $updated_content = $before . "\n\n" . $new_code . $after;
-        } else {
-            // Si no encontramos hooks, añadir al final pero antes del último cierre PHP
-            $new_code = $this->get_implementation_code($plugin, $prefix);
-            
-            // Eliminar el último cierre de PHP si existe
-            $current_content = rtrim(preg_replace('/\?>[\s\n]*$/', '', $current_content));
-            
-            // Añadir el nuevo código y el cierre de PHP
-            $updated_content = $current_content . "\n\n" . $new_code . "\n?>";
-        }
-
-        // Escribir el contenido actualizado
-        $success = file_put_contents($functions_file, $updated_content);
-
-        if (!$success) {
-            add_settings_error(
-                'wp_referrer_tracker',
-                'code_insert_failed',
-                'Failed to insert code in functions.php',
-                'error'
-            );
-            return false;
-        }
-
-        add_settings_error(
-            'wp_referrer_tracker',
-            'code_inserted',
-            'Code successfully inserted in functions.php',
-            'success'
-        );
-        return true;
-    }
-
-    /**
-     * Update code in functions.php
-     *
-     * Update the implementation code in the theme's functions.php file
-     */
-    private function update_code_in_functions($plugin, $prefix) {
-        $functions_file = get_template_directory() . '/functions.php';
-        $current_content = file_get_contents($functions_file);
-
-        // Hacer backup antes de actualizar
-        $backup_file = $functions_file . '.backup-' . date('Y-m-d-His');
-        if (!copy($functions_file, $backup_file)) {
-            add_settings_error(
-                'wp_referrer_tracker',
-                'backup_failed',
-                'Failed to create backup before updating functions.php',
-                'error'
-            );
-            return false;
-        }
-
-        // Encontrar el inicio y fin del código actual
-        $start_marker = '// WP Referrer Tracker Implementation Code';
-        $start_pos = strpos($current_content, $start_marker);
-        
-        if ($start_pos === false) {
-            return $this->insert_code_in_functions($plugin, $prefix);
-        }
-
-        // Buscar el final del código (próximo comentario o fin de archivo)
-        $end_pos = strpos($current_content, '//', $start_pos + strlen($start_marker));
-        if ($end_pos === false) {
-            // Si no hay más comentarios, buscar hasta el final
-            $end_pos = strlen($current_content);
-        }
-
-        // Preparar el nuevo código
-        $new_code = $this->get_implementation_code($plugin, $prefix);
-
-        // Reemplazar el código antiguo con el nuevo
-        $updated_content = substr($current_content, 0, $start_pos) . 
-                         $new_code . 
-                         substr($current_content, $end_pos);
-
-        // Escribir el contenido actualizado
-        $success = file_put_contents($functions_file, $updated_content);
-
-        if (!$success) {
-            add_settings_error(
-                'wp_referrer_tracker',
-                'code_update_failed',
-                'Failed to update code in functions.php',
-                'error'
-            );
-            return false;
-        }
-
-        add_settings_error(
-            'wp_referrer_tracker',
-            'code_updated',
-            'Code successfully updated in functions.php',
-            'success'
-        );
-        return true;
-    }
-
-    /**
-     * Remove code from functions.php
-     *
-     * Remove the implementation code from the theme's functions.php file
-     */
-    private function remove_code_from_functions() {
-        $functions_file = get_template_directory() . '/functions.php';
-        
-        if (!$this->is_functions_writable()) {
-            add_settings_error(
-                'wp_referrer_tracker',
-                'functions_not_writable',
-                'Could not write to functions.php. Please check file permissions.',
-                'error'
-            );
-            return false;
-        }
-
-        // Leer el contenido actual
-        $current_content = file_get_contents($functions_file);
-        
-        // Hacer backup del archivo original
-        $backup_file = $functions_file . '.backup-' . date('Y-m-d-His');
-        copy($functions_file, $backup_file);
-
-        // Eliminar el código
-        $pattern = '/\n*\/\/ WP Referrer Tracker Implementation Code.*?\}\);\n*/s';
-        $new_content = preg_replace($pattern, '', $current_content);
-
-        // Guardar los cambios
-        $success = file_put_contents($functions_file, $new_content);
-
-        if (!$success) {
-            add_settings_error(
-                'wp_referrer_tracker',
-                'code_remove_failed',
-                'Failed to remove code from functions.php',
-                'error'
-            );
-            return false;
-        }
-
-        add_settings_error(
-            'wp_referrer_tracker',
-            'code_removed',
-            'Code successfully removed from functions.php',
-            'success'
-        );
-        return true;
-    }
-
-    /**
-     * Settings page
-     *
-     * Display the settings page
-     */
-    public function settings_page() {
+    public function display_settings_page() {
         ?>
         <div class="wrap">
-            <h2>WP Referrer Tracker Settings</h2>
-            <form method="post" action="options.php">
+            <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
+
+            <?php
+            settings_errors('wp_referrer_tracker');
+            ?>
+
+            <form action="options.php" method="post">
                 <?php
                 settings_fields('wp_referrer_tracker');
                 do_settings_sections('wp-referrer-tracker');
@@ -547,204 +205,267 @@ class WP_Referrer_Tracker {
 
             <?php
             $options = get_option('wrt_settings');
-            if (!empty($options['generate_code']) && $options['form_plugin'] !== 'none') {
-                $this->display_implementation_code($options['form_plugin'], $options['field_prefix']);
-            }
+            $this->display_implementation_instructions($options['form_plugin']);
             ?>
         </div>
         <?php
     }
 
     /**
-     * Display implementation code
-     *
-     * Display the implementation code for the selected form plugin
+     * Display implementation instructions based on selected form plugin
      */
-    private function display_implementation_code($plugin, $prefix) {
-        $code = $this->get_implementation_code($plugin, $prefix);
-        if (!empty($code)) {
-            echo '<div class="wrt-code-section" style="margin-top: 20px;">';
-            echo '<h3>Implementation Code</h3>';
-            echo '<p>Add this code to your theme\'s functions.php file:</p>';
-            echo '<pre style="background: #f1f1f1; padding: 15px; overflow: auto;">';
-            echo esc_html($code);
-            echo '</pre>';
-            echo '</div>';
-        }
-    }
-
-    /**
-     * Get implementation code
-     *
-     * Get the implementation code for the selected form plugin
-     */
-    private function get_implementation_code($plugin, $prefix) {
-        $code = "\n\n// WP Referrer Tracker Implementation Code\n";
-        
-        // Primero añadimos la función getReferrerValue si no existe
-        $code .= "if (!function_exists('getReferrerValue')) {\n";
-        $code .= "    function getReferrerValue(\$type) {\n";
-        $code .= "        if (!function_exists('wrt_get_referrer_value')) { return ''; }\n";
-        $code .= "        return wrt_get_referrer_value(\$type);\n";
-        $code .= "    }\n";
-        $code .= "}\n\n";
-        
-        // Luego añadimos el código específico del plugin
-        $code .= "add_action('wp_footer', function() {\n";
+    private function display_implementation_instructions($plugin) {
+        echo '<div class="wrt-instructions" style="margin-top: 20px; padding: 15px; background: #fff; border: 1px solid #ccd0d4; box-shadow: 0 1px 1px rgba(0,0,0,.04);">';
+        echo '<h2>Implementation Instructions</h2>';
         
         switch ($plugin) {
-            case 'wpforms':
-                $code .= $this->get_wpforms_code($prefix);
-                break;
             case 'cf7':
-                $code .= $this->get_cf7_code($prefix);
+                ?>
+                <h3>Contact Form 7 Implementation</h3>
+                <p>Add these hidden fields to your Contact Form 7 form:</p>
+                <pre style="background: #f5f5f5; padding: 10px; overflow: auto;">
+[hidden wrt_source class:js-wrt-source ""]
+[hidden wrt_medium class:js-wrt-medium ""]
+[hidden wrt_campaign class:js-wrt-campaign ""]
+[hidden wrt_referrer class:js-wrt-referrer ""]</pre>
+                <p><strong>Important notes:</strong></p>
+                <ul style="list-style-type: disc; margin-left: 20px;">
+                    <li>The field names must use underscore (e.g., <code>wrt_source</code>)</li>
+                    <li>The classes must use hyphen (e.g., <code>js-wrt-source</code>)</li>
+                    <li>Leave the default value empty (<code>""</code>)</li>
+                    <li>Do not add any additional classes or attributes</li>
+                </ul>
+                <?php
                 break;
+
+            case 'wpforms':
+                ?>
+                <h3>WPForms Implementation</h3>
+                <p>Add these hidden fields to your WPForms form:</p>
+                <ol style="list-style-type: decimal; margin-left: 20px;">
+                    <li>Go to your form editor</li>
+                    <li>Drag and drop 4 "Hidden Field" elements from the "Fancy Fields" section</li>
+                    <li>Configure each hidden field:</li>
+                </ol>
+                <table class="wp-list-table widefat striped" style="margin-top: 10px;">
+                    <thead>
+                        <tr>
+                            <th>Field Label</th>
+                            <th>Field Name</th>
+                            <th>CSS Classes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Source</td>
+                            <td>wrt_source</td>
+                            <td>js-wrt-source</td>
+                        </tr>
+                        <tr>
+                            <td>Medium</td>
+                            <td>wrt_medium</td>
+                            <td>js-wrt-medium</td>
+                        </tr>
+                        <tr>
+                            <td>Campaign</td>
+                            <td>wrt_campaign</td>
+                            <td>js-wrt-campaign</td>
+                        </tr>
+                        <tr>
+                            <td>Referrer</td>
+                            <td>wrt_referrer</td>
+                            <td>js-wrt-referrer</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <?php
+                break;
+
             case 'gravity':
-                $code .= $this->get_gravity_forms_code($prefix);
+                ?>
+                <h3>Gravity Forms Implementation</h3>
+                <p>Add these hidden fields to your Gravity Forms form:</p>
+                <ol style="list-style-type: decimal; margin-left: 20px;">
+                    <li>Go to your form editor</li>
+                    <li>Add 4 "Hidden" fields from the "Advanced Fields" section</li>
+                    <li>Configure each hidden field:</li>
+                </ol>
+                <table class="wp-list-table widefat striped" style="margin-top: 10px;">
+                    <thead>
+                        <tr>
+                            <th>Field Label</th>
+                            <th>Field Name</th>
+                            <th>CSS Class Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Source</td>
+                            <td>wrt_source</td>
+                            <td>js-wrt-source</td>
+                        </tr>
+                        <tr>
+                            <td>Medium</td>
+                            <td>wrt_medium</td>
+                            <td>js-wrt-medium</td>
+                        </tr>
+                        <tr>
+                            <td>Campaign</td>
+                            <td>wrt_campaign</td>
+                            <td>js-wrt-campaign</td>
+                        </tr>
+                        <tr>
+                            <td>Referrer</td>
+                            <td>wrt_referrer</td>
+                            <td>js-wrt-referrer</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p><em>Note: Add the CSS Class Name in the "Advanced" tab of each field.</em></p>
+                <?php
                 break;
+
             case 'generic':
-                $code .= $this->get_generic_forms_code($prefix);
+                ?>
+                <h3>Generic HTML Forms Implementation</h3>
+                <p>Add these hidden fields to your HTML form:</p>
+                <pre style="background: #f5f5f5; padding: 10px; overflow: auto;">
+&lt;input type="hidden" name="wrt_source" class="js-wrt-source" value=""&gt;
+&lt;input type="hidden" name="wrt_medium" class="js-wrt-medium" value=""&gt;
+&lt;input type="hidden" name="wrt_campaign" class="js-wrt-campaign" value=""&gt;
+&lt;input type="hidden" name="wrt_referrer" class="js-wrt-referrer" value=""&gt;</pre>
+                <p><strong>Important notes:</strong></p>
+                <ul style="list-style-type: disc; margin-left: 20px;">
+                    <li>The name attributes must use underscore (e.g., <code>wrt_source</code>)</li>
+                    <li>The class attributes must use hyphen (e.g., <code>js-wrt-source</code>)</li>
+                    <li>Leave the value attribute empty (<code>value=""</code>)</li>
+                </ul>
+                <?php
+                break;
+
+            default:
+                echo '<p>Please select a form plugin to see implementation instructions.</p>';
                 break;
         }
         
-        $code .= "});\n";
-        return $code;
+        echo '</div>';
     }
 
     /**
-     * Get WPForms code
+     * Register settings
      *
-     * Get the implementation code for WPForms
+     * Register the plugin settings and add fields to the settings page
      */
-    private function get_wpforms_code($prefix) {
-        return "    ?>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        if (typeof wpforms !== 'undefined') {
-            wpforms.on('wpformsBeforeFormSubmit', function(form) {
-                const fields = {
-                    'source': getReferrerValue('source'),
-                    'medium': getReferrerValue('medium'),
-                    'campaign': getReferrerValue('campaign'),
-                    'referrer': getReferrerValue('referrer')
-                };
-                
-                for (let [key, value] of Object.entries(fields)) {
-                    const fieldName = '{$prefix}' + key;
-                    const hiddenField = form.querySelector('input[name=\"' + fieldName + '\"]');
-                    if (hiddenField) {
-                        hiddenField.value = value;
-                    }
-                }
-            });
+    public function register_settings() {
+        register_setting('wp_referrer_tracker', 'wrt_settings', array(
+            'type' => 'array',
+            'default' => array(
+                'form_plugin' => 'cf7',
+                'field_prefix' => 'wrt_',
+                'auto_fields' => false
+            ),
+            'sanitize_callback' => array($this, 'sanitize_settings')
+        ));
+
+        add_settings_section(
+            'wrt_main_section',
+            'Main Settings',
+            array($this, 'section_text'),
+            'wp-referrer-tracker'
+        );
+
+        add_settings_field(
+            'form_plugin',
+            'Form Plugin',
+            array($this, 'form_plugin_field'),
+            'wp-referrer-tracker',
+            'wrt_main_section'
+        );
+
+        add_settings_field(
+            'field_prefix',
+            'Field Prefix',
+            array($this, 'field_prefix_field'),
+            'wp-referrer-tracker',
+            'wrt_main_section'
+        );
+
+        add_settings_field(
+            'auto_fields',
+            'Auto-insert Hidden Fields',
+            array($this, 'auto_fields_field'),
+            'wp-referrer-tracker',
+            'wrt_main_section'
+        );
+    }
+
+    /**
+     * Sanitize settings
+     */
+    public function sanitize_settings($input) {
+        $sanitized = array();
+        
+        // Form Plugin
+        if (isset($input['form_plugin'])) {
+            $sanitized['form_plugin'] = sanitize_text_field($input['form_plugin']);
         }
-    });
-    </script>
-    <?php";
+        
+        // Field Prefix
+        if (isset($input['field_prefix'])) {
+            $sanitized['field_prefix'] = sanitize_text_field($input['field_prefix']);
+        }
+        
+        // Auto Fields
+        $sanitized['auto_fields'] = isset($input['auto_fields']) ? true : false;
+        
+        return $sanitized;
     }
 
     /**
-     * Get Contact Form 7 code
-     *
-     * Get the implementation code for Contact Form 7
+     * Section text
      */
-    private function get_cf7_code($prefix) {
-        return "    add_action('wp_footer', function() {
-        ob_start();
+    public function section_text() {
+        echo '<p>Configure your referrer tracking settings here.</p>';
+    }
+
+    /**
+     * Form plugin field
+     */
+    public function form_plugin_field() {
+        $options = get_option('wrt_settings');
+        $current = isset($options['form_plugin']) ? $options['form_plugin'] : 'cf7';
         ?>
-        <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            if (typeof getReferrerValue === 'undefined') { return; }
-            
-            function updateHiddenField(className, valueType) {
-                const fields = document.getElementsByClassName('wpcf7-form-control-wrap ' + className);
-                for (let field of fields) {
-                    const input = field.querySelector('input[type=\"hidden\"]');
-                    if (input) {
-                        input.value = getReferrerValue(valueType);
-                    }
-                }
-            }
-
-            function updateAllFields() {
-                updateHiddenField('{$prefix}source', 'source');
-                updateHiddenField('{$prefix}medium', 'medium');
-                updateHiddenField('{$prefix}campaign', 'campaign');
-                updateHiddenField('{$prefix}referrer', 'referrer');
-            }
-
-            // Actualizar campos cuando el formulario se carga
-            updateAllFields();
-
-            // Actualizar campos cuando se envía el formulario
-            document.addEventListener('wpcf7:submit', updateAllFields);
-        });
-        </script>
+        <select name="wrt_settings[form_plugin]">
+            <option value="cf7" <?php selected($current, 'cf7'); ?>>Contact Form 7</option>
+            <option value="wpforms" <?php selected($current, 'wpforms'); ?>>WPForms</option>
+            <option value="gravity" <?php selected($current, 'gravity'); ?>>Gravity Forms</option>
+            <option value="generic" <?php selected($current, 'generic'); ?>>Generic HTML Forms</option>
+        </select>
         <?php
-        $script = ob_get_clean();
-        echo $script;
-    });";
     }
 
     /**
-     * Get Gravity Forms code
-     *
-     * Get the implementation code for Gravity Forms
+     * Field prefix field
      */
-    private function get_gravity_forms_code($prefix) {
-        return "    ?>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        if (typeof gform !== 'undefined') {
-            gform.addFilter('gform_form_pre_render', function(form) {
-                const fields = {
-                    'source': getReferrerValue('source'),
-                    'medium': getReferrerValue('medium'),
-                    'campaign': getReferrerValue('campaign'),
-                    'referrer': getReferrerValue('referrer')
-                };
-                
-                for (let [key, value] of Object.entries(fields)) {
-                    const fieldName = '{$prefix}' + key;
-                    jQuery('input[name=\"input_' + fieldName + '\"]').val(value);
-                }
-                return form;
-            });
-        }
-    });
-    </script>
-    <?php";
+    public function field_prefix_field() {
+        $options = get_option('wrt_settings');
+        $current = isset($options['field_prefix']) ? $options['field_prefix'] : 'wrt_';
+        ?>
+        <input type="text" name="wrt_settings[field_prefix]" value="<?php echo esc_attr($current); ?>" />
+        <p class="description">Prefix for the hidden fields (e.g., wrt_)</p>
+        <?php
     }
 
     /**
-     * Get generic forms code
-     *
-     * Get the implementation code for generic HTML forms
+     * Auto fields field
      */
-    private function get_generic_forms_code($prefix) {
-        return "    ?>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const forms = document.getElementsByTagName('form');
-        for (let form of forms) {
-            const fields = {
-                'source': getReferrerValue('source'),
-                'medium': getReferrerValue('medium'),
-                'campaign': getReferrerValue('campaign'),
-                'referrer': getReferrerValue('referrer')
-            };
-            
-            for (let [key, value] of Object.entries(fields)) {
-                const fieldName = '{$prefix}' + key;
-                const input = form.querySelector('input[name=\"' + fieldName + '\"]');
-                if (input) {
-                    input.value = value;
-                }
-            }
-        }
-    });
-    </script>
-    <?php";
+    public function auto_fields_field() {
+        $options = get_option('wrt_settings');
+        $checked = isset($options['auto_fields']) ? $options['auto_fields'] : false;
+        ?>
+        <input type="checkbox" name="wrt_settings[auto_fields]" value="1" <?php checked($checked, true); ?> />
+        <p class="description">Automatically insert hidden fields into Contact Form 7 forms</p>
+        <?php
     }
 
     /**
@@ -752,16 +473,86 @@ class WP_Referrer_Tracker {
      *
      * Set up cookies to track referrer information
      */
-    public function setup_cookies() {
-        if (!isset($_COOKIE['wrt_referrer']) && isset($_SERVER['HTTP_REFERER'])) {
-            $referrer = $_SERVER['HTTP_REFERER'];
-            $parsed = $this->parse_referrer($referrer);
+    private function set_cookies() {
+        // Si ya existen las cookies, no las sobreescribimos
+        if (isset($_COOKIE['wrt_source']) && !empty($_COOKIE['wrt_source'])) {
+            error_log('WRT: Las cookies ya existen, no se sobreescriben');
+            return;
+        }
+
+        $referrer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
+        error_log('WRT: Referrer detectado: ' . $referrer);
+
+        // Obtener los parámetros UTM
+        $utm_source = isset($_GET['utm_source']) ? $_GET['utm_source'] : '';
+        $utm_medium = isset($_GET['utm_medium']) ? $_GET['utm_medium'] : '';
+        $utm_campaign = isset($_GET['utm_campaign']) ? $_GET['utm_campaign'] : '';
+        
+        error_log('WRT: UTM params - source: ' . $utm_source . ', medium: ' . $utm_medium . ', campaign: ' . $utm_campaign);
+
+        // Si hay parámetros UTM, los usamos
+        if (!empty($utm_source)) {
+            $source = $utm_source;
+            $medium = !empty($utm_medium) ? $utm_medium : 'referral';
+            $campaign = $utm_campaign;
+        } 
+        // Si no hay UTM, analizamos el referrer
+        else if (!empty($referrer)) {
+            $parsed_url = parse_url($referrer);
+            $host = isset($parsed_url['host']) ? $parsed_url['host'] : '';
             
-            // Set cookies for 30 days
-            setcookie('wrt_source', $parsed['source'], time() + (86400 * 30), '/');
-            setcookie('wrt_medium', $parsed['medium'], time() + (86400 * 30), '/');
-            setcookie('wrt_campaign', $parsed['campaign'], time() + (86400 * 30), '/');
-            setcookie('wrt_referrer', $referrer, time() + (86400 * 30), '/');
+            // Google
+            if (strpos($host, 'google') !== false) {
+                $source = 'google';
+                $medium = isset($_GET['gclid']) ? 'cpc' : 'organic';
+            }
+            // Facebook
+            else if (strpos($host, 'facebook') !== false || strpos($host, 'fb') !== false) {
+                $source = 'facebook';
+                $medium = 'social';
+            }
+            // Otros casos
+            else {
+                $source = $host;
+                $medium = 'referral';
+            }
+            $campaign = '';
+        }
+        // Si no hay referrer ni UTM
+        else {
+            $source = 'direct';
+            $medium = 'none';
+            $campaign = '';
+        }
+
+        error_log('WRT: Valores finales - source: ' . $source . ', medium: ' . $medium . ', campaign: ' . $campaign);
+
+        // Establecer las cookies con una duración de 30 días
+        $expire = time() + (30 * 24 * 60 * 60);
+        $path = '/';
+        
+        setcookie('wrt_source', $source, $expire, $path);
+        setcookie('wrt_medium', $medium, $expire, $path);
+        setcookie('wrt_campaign', $campaign, $expire, $path);
+        setcookie('wrt_referrer', $referrer, $expire, $path);
+
+        error_log('WRT: Cookies establecidas con éxito');
+
+        // También guardamos los valores en la sesión actual
+        $_COOKIE['wrt_source'] = $source;
+        $_COOKIE['wrt_medium'] = $medium;
+        $_COOKIE['wrt_campaign'] = $campaign;
+        $_COOKIE['wrt_referrer'] = $referrer;
+    }
+
+    /**
+     * Initialize tracking
+     *
+     * Set up initial tracking values
+     */
+    public function init_tracking() {
+        if (!is_admin()) {
+            $this->set_cookies();
         }
     }
 
@@ -1064,8 +855,7 @@ class WP_Referrer_Tracker {
             'auto_fields' => true,
             'field_prefix' => 'wrt_',
             'form_plugin' => 'none',
-            'generate_code' => false,
-            'auto_insert_code' => false
+            'auto_insert' => false
         ));
 
         // Pass cookie values and settings to JavaScript
@@ -1081,6 +871,50 @@ class WP_Referrer_Tracker {
         );
 
         wp_localize_script('wp-referrer-tracker', 'wpReferrerTracker', $referrer_data);
+    }
+
+    /**
+     * Get source
+     *
+     * Get the source value from the cookie
+     *
+     * @return string The source value
+     */
+    private function get_source() {
+        return $_COOKIE['wrt_source'] ?? '';
+    }
+
+    /**
+     * Get medium
+     *
+     * Get the medium value from the cookie
+     *
+     * @return string The medium value
+     */
+    private function get_medium() {
+        return $_COOKIE['wrt_medium'] ?? '';
+    }
+
+    /**
+     * Get campaign
+     *
+     * Get the campaign value from the cookie
+     *
+     * @return string The campaign value
+     */
+    private function get_campaign() {
+        return $_COOKIE['wrt_campaign'] ?? '';
+    }
+
+    /**
+     * Get referrer
+     *
+     * Get the referrer value from the cookie
+     *
+     * @return string The referrer value
+     */
+    private function get_referrer() {
+        return $_COOKIE['wrt_referrer'] ?? '';
     }
 }
 
