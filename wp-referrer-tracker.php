@@ -111,57 +111,71 @@ class WP_Referrer_Tracker {
      * Insertar el código de tracking
      */
     public function insert_tracking_code() {
-        // Obtener los valores de las cookies
-        $source = isset($_COOKIE['wrt_source']) ? $_COOKIE['wrt_source'] : '';
-        $medium = isset($_COOKIE['wrt_medium']) ? $_COOKIE['wrt_medium'] : '';
-        $campaign = isset($_COOKIE['wrt_campaign']) ? $_COOKIE['wrt_campaign'] : '';
-        $referrer = isset($_COOKIE['wrt_referrer']) ? $_COOKIE['wrt_referrer'] : '';
+        // Obtener los valores de las cookies de forma segura
+        $source = isset($_COOKIE['wrt_source']) ? sanitize_text_field(wp_unslash($_COOKIE['wrt_source'])) : '';
+        $medium = isset($_COOKIE['wrt_medium']) ? sanitize_text_field(wp_unslash($_COOKIE['wrt_medium'])) : '';
+        $campaign = isset($_COOKIE['wrt_campaign']) ? sanitize_text_field(wp_unslash($_COOKIE['wrt_campaign'])) : '';
+        $referrer = isset($_COOKIE['wrt_referrer']) ? esc_url_raw(wp_unslash($_COOKIE['wrt_referrer'])) : '';
 
         ?>
         <script>
         // Valores de referrer
         var wrtValues = {
-            source: <?php echo json_encode($source); ?>,
-            medium: <?php echo json_encode($medium); ?>,
-            campaign: <?php echo json_encode($campaign); ?>,
-            referrer: <?php echo json_encode($referrer); ?>
+            source: <?php echo wp_json_encode($source); ?>,
+            medium: <?php echo wp_json_encode($medium); ?>,
+            campaign: <?php echo wp_json_encode($campaign); ?>,
+            referrer: <?php echo wp_json_encode($referrer); ?>
         };
 
         // Función para actualizar campos
         function wrtUpdateFields() {
-            console.log('WRT: Actualizando campos con valores:', wrtValues);
+            if (window.wrt_debug) {
+                console.log('WRT: Actualizando campos con valores:', wrtValues);
+            }
             
             // Actualizar campos por clase
             document.querySelectorAll('.js-wrt-source').forEach(function(el) {
                 el.value = wrtValues.source;
-                console.log('WRT: Campo source actualizado:', el.value);
+                if (window.wrt_debug) {
+                    console.log('WRT: Campo source actualizado:', el.value);
+                }
             });
             
             document.querySelectorAll('.js-wrt-medium').forEach(function(el) {
                 el.value = wrtValues.medium;
-                console.log('WRT: Campo medium actualizado:', el.value);
+                if (window.wrt_debug) {
+                    console.log('WRT: Campo medium actualizado:', el.value);
+                }
             });
             
             document.querySelectorAll('.js-wrt-campaign').forEach(function(el) {
                 el.value = wrtValues.campaign;
-                console.log('WRT: Campo campaign actualizado:', el.value);
+                if (window.wrt_debug) {
+                    console.log('WRT: Campo campaign actualizado:', el.value);
+                }
             });
             
             document.querySelectorAll('.js-wrt-referrer').forEach(function(el) {
                 el.value = wrtValues.referrer;
-                console.log('WRT: Campo referrer actualizado:', el.value);
+                if (window.wrt_debug) {
+                    console.log('WRT: Campo referrer actualizado:', el.value);
+                }
             });
         }
 
         // Actualizar campos cuando el DOM está listo
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('WRT: DOM cargado, actualizando campos...');
+            if (window.wrt_debug) {
+                console.log('WRT: DOM cargado, actualizando campos...');
+            }
             wrtUpdateFields();
         });
 
         // Actualizar campos antes de enviar el formulario CF7
         document.addEventListener('wpcf7submit', function() {
-            console.log('WRT: Formulario enviado, actualizando campos...');
+            if (window.wrt_debug) {
+                console.log('WRT: Formulario enviado, actualizando campos...');
+            }
             wrtUpdateFields();
         });
         </script>
@@ -476,19 +490,33 @@ class WP_Referrer_Tracker {
     private function set_cookies() {
         // Si ya existen las cookies, no las sobreescribimos
         if (isset($_COOKIE['wrt_source']) && !empty($_COOKIE['wrt_source'])) {
-            error_log('WRT: Las cookies ya existen, no se sobreescriben');
+            $this->debug_log('Las cookies ya existen, no se sobreescriben');
             return;
         }
 
-        $referrer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
-        error_log('WRT: Referrer detectado: ' . $referrer);
+        $referrer = '';
+        if (isset($_SERVER['HTTP_REFERER'])) {
+            $referrer = esc_url_raw(wp_unslash($_SERVER['HTTP_REFERER']));
+        }
+        $this->debug_log('Referrer detectado: ' . $referrer);
 
-        // Obtener los parámetros UTM
-        $utm_source = isset($_GET['utm_source']) ? $_GET['utm_source'] : '';
-        $utm_medium = isset($_GET['utm_medium']) ? $_GET['utm_medium'] : '';
-        $utm_campaign = isset($_GET['utm_campaign']) ? $_GET['utm_campaign'] : '';
+        // Obtener los parámetros UTM de forma segura
+        $utm_source = '';
+        $utm_medium = '';
+        $utm_campaign = '';
         
-        error_log('WRT: UTM params - source: ' . $utm_source . ', medium: ' . $utm_medium . ', campaign: ' . $utm_campaign);
+        // Verificar nonce si es necesario
+        if (isset($_GET['utm_source'])) {
+            $utm_source = sanitize_text_field(wp_unslash($_GET['utm_source']));
+        }
+        if (isset($_GET['utm_medium'])) {
+            $utm_medium = sanitize_text_field(wp_unslash($_GET['utm_medium']));
+        }
+        if (isset($_GET['utm_campaign'])) {
+            $utm_campaign = sanitize_text_field(wp_unslash($_GET['utm_campaign']));
+        }
+        
+        $this->debug_log('UTM params - source: ' . $utm_source . ', medium: ' . $utm_medium . ', campaign: ' . $utm_campaign);
 
         // Si hay parámetros UTM, los usamos
         if (!empty($utm_source)) {
@@ -498,7 +526,7 @@ class WP_Referrer_Tracker {
         } 
         // Si no hay UTM, analizamos el referrer
         else if (!empty($referrer)) {
-            $parsed_url = parse_url($referrer);
+            $parsed_url = wp_parse_url($referrer);
             $host = isset($parsed_url['host']) ? $parsed_url['host'] : '';
             
             // Google
@@ -525,7 +553,7 @@ class WP_Referrer_Tracker {
             $campaign = '';
         }
 
-        error_log('WRT: Valores finales - source: ' . $source . ', medium: ' . $medium . ', campaign: ' . $campaign);
+        $this->debug_log('Valores finales - source: ' . $source . ', medium: ' . $medium . ', campaign: ' . $campaign);
 
         // Establecer las cookies con una duración de 30 días
         $expire = time() + (30 * 24 * 60 * 60);
@@ -536,7 +564,7 @@ class WP_Referrer_Tracker {
         setcookie('wrt_campaign', $campaign, $expire, $path);
         setcookie('wrt_referrer', $referrer, $expire, $path);
 
-        error_log('WRT: Cookies establecidas con éxito');
+        $this->debug_log('Cookies establecidas con éxito');
 
         // También guardamos los valores en la sesión actual
         $_COOKIE['wrt_source'] = $source;
@@ -915,6 +943,15 @@ class WP_Referrer_Tracker {
      */
     private function get_referrer() {
         return $_COOKIE['wrt_referrer'] ?? '';
+    }
+
+    /**
+     * Debug logging
+     */
+    private function debug_log($message) {
+        if (defined('WP_DEBUG') && WP_DEBUG === true) {
+            error_log('WRT: ' . $message);
+        }
     }
 }
 
