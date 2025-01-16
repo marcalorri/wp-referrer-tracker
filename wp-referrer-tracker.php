@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: WP Referrer Tracker
- * Plugin URI: https://www.linkedin.com/in/marcalorri/
+ * Plugin URI: https://github.com/marcalorri/wp-referrer-tracker
  * Description: Track referrer information and parse it into source, medium and campaign for any form plugin. Supports WPForms, Contact Form 7, Gravity Forms, and generic HTML forms.
  * Version: 1.4.2
  * Author: Marçal Orri
