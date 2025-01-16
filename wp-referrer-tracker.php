@@ -3,7 +3,7 @@
  * Plugin Name: WP Referrer Tracker
  * Plugin URI: 
  * Description: Track referrer information and parse it into source, medium and campaign for any form plugin. Supports WPForms, Contact Form 7, Gravity Forms, and generic HTML forms with automatic code insertion.
- * Version: 1.3.2
+ * Version: 1.3.3
  * Author: WMS
  * Author URI: https://www.webmanagerservice.es
  * License: GPL v2 or later
@@ -25,7 +25,7 @@
  * - Automatic form field insertion
  * - Custom field prefix configuration
  * - Plugin-specific implementation code generation
- * - Intelligent code placement in functions.php
+ * - Clean PHP code generation
  * - Automatic backup creation
  * - Comprehensive paid traffic detection
  * - International search engine support
@@ -33,7 +33,7 @@
  * Safety Features:
  * - Smart code placement detection
  * - Automatic backup before any modification
- * - Validation of existing code
+ * - Proper PHP tag handling
  * - Safe code updates and removal
  * - Error handling and user notifications
  */
@@ -649,36 +649,41 @@ class WP_Referrer_Tracker {
      * Get the implementation code for Contact Form 7
      */
     private function get_cf7_code($prefix) {
-        return "    ?>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        if (typeof getReferrerValue === 'undefined') { return; }
-        
-        function updateHiddenField(className, valueType) {
-            const fields = document.getElementsByClassName('wpcf7-form-control-wrap ' + className);
-            for (let field of fields) {
-                const input = field.querySelector('input[type=\"hidden\"]');
-                if (input) {
-                    input.value = getReferrerValue(valueType);
+        return "    add_action('wp_footer', function() {
+        ob_start();
+        ?>
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof getReferrerValue === 'undefined') { return; }
+            
+            function updateHiddenField(className, valueType) {
+                const fields = document.getElementsByClassName('wpcf7-form-control-wrap ' + className);
+                for (let field of fields) {
+                    const input = field.querySelector('input[type=\"hidden\"]');
+                    if (input) {
+                        input.value = getReferrerValue(valueType);
+                    }
                 }
             }
-        }
 
-        function updateAllFields() {
-            updateHiddenField('{$prefix}source', 'source');
-            updateHiddenField('{$prefix}medium', 'medium');
-            updateHiddenField('{$prefix}campaign', 'campaign');
-            updateHiddenField('{$prefix}referrer', 'referrer');
-        }
+            function updateAllFields() {
+                updateHiddenField('{$prefix}source', 'source');
+                updateHiddenField('{$prefix}medium', 'medium');
+                updateHiddenField('{$prefix}campaign', 'campaign');
+                updateHiddenField('{$prefix}referrer', 'referrer');
+            }
 
-        // Actualizar campos cuando el formulario se carga
-        updateAllFields();
+            // Actualizar campos cuando el formulario se carga
+            updateAllFields();
 
-        // Actualizar campos cuando se envía el formulario
-        document.addEventListener('wpcf7:submit', updateAllFields);
-    });
-    </script>
-    <?php";
+            // Actualizar campos cuando se envía el formulario
+            document.addEventListener('wpcf7:submit', updateAllFields);
+        });
+        </script>
+        <?php
+        $script = ob_get_clean();
+        echo $script;
+    });";
     }
 
     /**

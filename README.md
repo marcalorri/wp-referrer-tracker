@@ -69,7 +69,7 @@ You can implement the tracking in three ways:
    - Copy the generated code to your theme's functions.php file manually
 
 3. **Manual Implementation**:
-   Follow the instructions below based on your form plugin:
+ Follow the instructions below based on your form plugin:
 
 #### WPForms
 
@@ -135,6 +135,18 @@ The plugin includes several safety features for automatic code insertion:
    - Clean removal when disabled
 
 ## Changelog
+
+### 1.3.3
+- Fixed PHP tag handling in functions.php:
+  - Removed unnecessary PHP closing/opening tags
+  - Added proper output buffering for scripts
+  - Improved code structure and readability
+  - Better integration with WordPress coding standards
+- Enhanced code generation:
+  - Clean PHP code output
+  - Better script encapsulation
+  - Improved error prevention
+  - More reliable script injection
 
 ### 1.3.2
 - Fixed critical issue with code placement in functions.php:
