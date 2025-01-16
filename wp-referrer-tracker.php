@@ -3,7 +3,7 @@
  * Plugin Name: WP Referrer Tracker
  * Plugin URI: 
  * Description: Track referrer information and parse it into source, medium and campaign for any form plugin. Supports WPForms, Contact Form 7, Gravity Forms, and generic HTML forms with automatic code insertion.
- * Version: 1.3.0
+ * Version: 1.3.2
  * Author: WMS
  * Author URI: https://www.webmanagerservice.es
  * License: GPL v2 or later
@@ -25,10 +25,17 @@
  * - Automatic form field insertion
  * - Custom field prefix configuration
  * - Plugin-specific implementation code generation
- * - Automatic code insertion in functions.php
+ * - Intelligent code placement in functions.php
  * - Automatic backup creation
  * - Comprehensive paid traffic detection
  * - International search engine support
+ * 
+ * Safety Features:
+ * - Smart code placement detection
+ * - Automatic backup before any modification
+ * - Validation of existing code
+ * - Safe code updates and removal
+ * - Error handling and user notifications
  */
 
 if (!defined('ABSPATH')) {
@@ -342,18 +349,48 @@ class WP_Referrer_Tracker {
         
         // Verificar si el código ya existe
         if (strpos($current_content, '// WP Referrer Tracker Implementation Code') !== false) {
-            return false;
+            return $this->update_code_in_functions($plugin, $prefix);
         }
-
-        // Preparar el nuevo código
-        $new_code = "\n\n" . $this->get_implementation_code($plugin, $prefix);
 
         // Hacer backup del archivo original
         $backup_file = $functions_file . '.backup-' . date('Y-m-d-His');
-        copy($functions_file, $backup_file);
+        if (!copy($functions_file, $backup_file)) {
+            add_settings_error(
+                'wp_referrer_tracker',
+                'backup_failed',
+                'Failed to create backup of functions.php',
+                'error'
+            );
+            return false;
+        }
 
-        // Añadir el nuevo código al final del archivo
-        $success = file_put_contents($functions_file, $current_content . $new_code);
+        // Encontrar el último add_action o add_filter
+        if (preg_match_all('/add_(action|filter)\s*\([^;]+;\s*$/m', $current_content, $matches, PREG_OFFSET_CAPTURE)) {
+            $last_hook = end($matches[0]);
+            $position = $last_hook[1] + strlen($last_hook[0]);
+            
+            // Dividir el contenido
+            $before = substr($current_content, 0, $position);
+            $after = substr($current_content, $position);
+            
+            // Preparar el nuevo código
+            $new_code = $this->get_implementation_code($plugin, $prefix);
+            
+            // Reconstruir el archivo
+            $updated_content = $before . "\n\n" . $new_code . $after;
+        } else {
+            // Si no encontramos hooks, añadir al final pero antes del último cierre PHP
+            $new_code = $this->get_implementation_code($plugin, $prefix);
+            
+            // Eliminar el último cierre de PHP si existe
+            $current_content = rtrim(preg_replace('/\?>[\s\n]*$/', '', $current_content));
+            
+            // Añadir el nuevo código y el cierre de PHP
+            $updated_content = $current_content . "\n\n" . $new_code . "\n?>";
+        }
+
+        // Escribir el contenido actualizado
+        $success = file_put_contents($functions_file, $updated_content);
 
         if (!$success) {
             add_settings_error(
@@ -381,34 +418,45 @@ class WP_Referrer_Tracker {
      */
     private function update_code_in_functions($plugin, $prefix) {
         $functions_file = get_template_directory() . '/functions.php';
-        
-        if (!$this->is_functions_writable()) {
+        $current_content = file_get_contents($functions_file);
+
+        // Hacer backup antes de actualizar
+        $backup_file = $functions_file . '.backup-' . date('Y-m-d-His');
+        if (!copy($functions_file, $backup_file)) {
             add_settings_error(
                 'wp_referrer_tracker',
-                'functions_not_writable',
-                'Could not write to functions.php. Please check file permissions.',
+                'backup_failed',
+                'Failed to create backup before updating functions.php',
                 'error'
             );
             return false;
         }
 
-        // Leer el contenido actual
-        $current_content = file_get_contents($functions_file);
+        // Encontrar el inicio y fin del código actual
+        $start_marker = '// WP Referrer Tracker Implementation Code';
+        $start_pos = strpos($current_content, $start_marker);
         
-        // Hacer backup del archivo original
-        $backup_file = $functions_file . '.backup-' . date('Y-m-d-His');
-        copy($functions_file, $backup_file);
+        if ($start_pos === false) {
+            return $this->insert_code_in_functions($plugin, $prefix);
+        }
 
-        // Eliminar el código antiguo
-        $pattern = '/\/\/ WP Referrer Tracker Implementation Code.*?\}\);/s';
-        $new_content = preg_replace($pattern, '', $current_content);
+        // Buscar el final del código (próximo comentario o fin de archivo)
+        $end_pos = strpos($current_content, '//', $start_pos + strlen($start_marker));
+        if ($end_pos === false) {
+            // Si no hay más comentarios, buscar hasta el final
+            $end_pos = strlen($current_content);
+        }
 
-        // Añadir el nuevo código
+        // Preparar el nuevo código
         $new_code = $this->get_implementation_code($plugin, $prefix);
-        $new_content .= "\n\n" . $new_code;
 
-        // Guardar los cambios
-        $success = file_put_contents($functions_file, $new_content);
+        // Reemplazar el código antiguo con el nuevo
+        $updated_content = substr($current_content, 0, $start_pos) . 
+                         $new_code . 
+                         substr($current_content, $end_pos);
+
+        // Escribir el contenido actualizado
+        $success = file_put_contents($functions_file, $updated_content);
 
         if (!$success) {
             add_settings_error(
@@ -531,7 +579,17 @@ class WP_Referrer_Tracker {
      * Get the implementation code for the selected form plugin
      */
     private function get_implementation_code($plugin, $prefix) {
-        $code = "// WP Referrer Tracker Implementation Code\n";
+        $code = "\n\n// WP Referrer Tracker Implementation Code\n";
+        
+        // Primero añadimos la función getReferrerValue si no existe
+        $code .= "if (!function_exists('getReferrerValue')) {\n";
+        $code .= "    function getReferrerValue(\$type) {\n";
+        $code .= "        if (!function_exists('wrt_get_referrer_value')) { return ''; }\n";
+        $code .= "        return wrt_get_referrer_value(\$type);\n";
+        $code .= "    }\n";
+        $code .= "}\n\n";
+        
+        // Luego añadimos el código específico del plugin
         $code .= "add_action('wp_footer', function() {\n";
         
         switch ($plugin) {
@@ -594,6 +652,8 @@ class WP_Referrer_Tracker {
         return "    ?>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
+        if (typeof getReferrerValue === 'undefined') { return; }
+        
         function updateHiddenField(className, valueType) {
             const fields = document.getElementsByClassName('wpcf7-form-control-wrap ' + className);
             for (let field of fields) {
@@ -604,12 +664,18 @@ class WP_Referrer_Tracker {
             }
         }
 
-        document.addEventListener('wpcf7submit', function() {
+        function updateAllFields() {
             updateHiddenField('{$prefix}source', 'source');
             updateHiddenField('{$prefix}medium', 'medium');
             updateHiddenField('{$prefix}campaign', 'campaign');
             updateHiddenField('{$prefix}referrer', 'referrer');
-        });
+        }
+
+        // Actualizar campos cuando el formulario se carga
+        updateAllFields();
+
+        // Actualizar campos cuando se envía el formulario
+        document.addEventListener('wpcf7:submit', updateAllFields);
     });
     </script>
     <?php";

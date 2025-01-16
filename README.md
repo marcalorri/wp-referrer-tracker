@@ -136,6 +136,32 @@ The plugin includes several safety features for automatic code insertion:
 
 ## Changelog
 
+### 1.3.2
+- Fixed critical issue with code placement in functions.php:
+  - Added smart detection of last hook position
+  - Improved handling of PHP closing tags
+  - Better preservation of existing code structure
+  - Fixed code truncation issues
+- Enhanced code insertion logic:
+  - Intelligent placement after last hook
+  - Proper handling of file endings
+  - Better backup validation
+  - Improved error recovery
+
+### 1.3.1
+- Fixed critical bugs in automatic code insertion:
+  - Fixed Contact Form 7 event listener (wpcf7:submit)
+  - Added validation for getReferrerValue function
+  - Improved code insertion in functions.php
+  - Added proper PHP tag handling
+- Enhanced safety features:
+  - Added validation before backup creation
+  - Improved error messages and warnings
+  - Added code cleanup on uninstall
+  - Better handling of existing code
+- Added immediate form field updates on page load
+- Improved code organization and readability
+
 ### 1.3.0
 - Added automatic code insertion in functions.php
 - Added automatic backup system for functions.php
