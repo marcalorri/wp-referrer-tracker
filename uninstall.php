@@ -5,4 +5,4 @@ if (!defined('WP_UNINSTALL_PLUGIN')) {
 }
 
 // Delete plugin options
-delete_option('wrt_settings');
+delete_option('rt_settings');
