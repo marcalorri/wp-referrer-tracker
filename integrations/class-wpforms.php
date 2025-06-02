@@ -35,14 +35,9 @@ class RT_Integration_WPForms {
         $options = get_option('rt_settings');
         $this->field_prefix = isset($options['rt_field_prefix']) ? $options['rt_field_prefix'] : 'rt_';
 
-        // Si está activada la inserción automática de campos
-        if (isset($options['rt_auto_fields']) && $options['rt_auto_fields']) {
-            // Add WPForms integration
-            add_filter('wpforms_field_properties', array($this, 'add_hidden_fields_wpforms'), 10, 3);
-            
-            // Add filter to populate fields before form is displayed
-            add_filter('wpforms_frontend_form_data', array($this, 'populate_wpforms_fields'));
-        }
+        // Siempre añadir los filtros si WPForms está seleccionado
+        add_filter('wpforms_field_properties', array($this, 'add_hidden_fields_wpforms'), 10, 3);
+        add_filter('wpforms_frontend_form_data', array($this, 'populate_wpforms_fields'));
     }
 
     /**

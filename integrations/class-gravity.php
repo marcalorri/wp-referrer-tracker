@@ -36,6 +36,11 @@ class RT_Integration_Gravity {
             add_filter('gform_pre_render', array($this, 'add_hidden_fields_gravity'));
             add_filter('gform_pre_validation', array($this, 'populate_gravity_fields'));
         }
+        // Siempre añadir filtros para rellenar dinámicamente los campos ocultos
+        add_filter('gform_field_value_rt_source', array($this, 'gform_dynamic_value_source'));
+        add_filter('gform_field_value_rt_medium', array($this, 'gform_dynamic_value_medium'));
+        add_filter('gform_field_value_rt_campaign', array($this, 'gform_dynamic_value_campaign'));
+        add_filter('gform_field_value_rt_referrer', array($this, 'gform_dynamic_value_referrer'));
     }
 
     /**
@@ -144,42 +149,101 @@ class RT_Integration_Gravity {
      * @return array Modified form data
      */
     public function populate_gravity_fields($form) {
-        // Get debug mode
         $debug = get_option('referrer_tracker_debug', 'no') === 'yes';
-        
-        // Get tracking values from cookies
-        $source = isset($_COOKIE['rt_source']) ? $_COOKIE['rt_source'] : '';
-        $medium = isset($_COOKIE['rt_medium']) ? $_COOKIE['rt_medium'] : '';
-        $campaign = isset($_COOKIE['rt_campaign']) ? $_COOKIE['rt_campaign'] : '';
-        $referrer = isset($_COOKIE['rt_referrer']) ? $_COOKIE['rt_referrer'] : '';
-        
+        $tracking = $this->get_tracking_values();
+        $source = $tracking['source'];
+        $medium = $tracking['medium'];
+        $campaign = $tracking['campaign'];
+        $referrer = $tracking['referrer'];
+
         if ($debug) {
             error_log('RT Debug: Populating Gravity Forms fields - source: ' . $source . ', medium: ' . $medium . ', campaign: ' . $campaign . ', referrer: ' . $referrer);
         }
-        
+
         // Populate fields
         foreach ($form['fields'] as &$field) {
             if ($field->type == 'hidden') {
                 $field_label = strtolower($field->label);
-                
+
                 if (strpos($field_label, 'source') !== false && !empty($source)) {
                     $_POST['input_' . $field->id] = $source;
                 }
-                
                 if (strpos($field_label, 'medium') !== false && !empty($medium)) {
                     $_POST['input_' . $field->id] = $medium;
                 }
-                
                 if (strpos($field_label, 'campaign') !== false && !empty($campaign)) {
                     $_POST['input_' . $field->id] = $campaign;
                 }
-                
                 if (strpos($field_label, 'referrer') !== false && !empty($referrer)) {
                     $_POST['input_' . $field->id] = $referrer;
                 }
             }
         }
-        
         return $form;
+    }
+
+    /**
+     * Obtiene los valores de tracking en orden de prioridad:
+     * 1. UTM en URL
+     * 2. Corrección de errores tipográficos
+     * 3. Cookies
+     * 4. Por defecto
+     * @return array
+     */
+    private function get_tracking_values() {
+        $source = '';
+        $medium = '';
+        $campaign = '';
+        $referrer = isset($_SERVER['HTTP_REFERER']) ? sanitize_text_field($_SERVER['HTTP_REFERER']) : '';
+        $debug = get_option('referrer_tracker_debug', 'no') === 'yes';
+
+        // PRIORIDAD 1: UTM en URL
+        if (isset($_GET['utm_source']) && !empty($_GET['utm_source'])) {
+            $source = sanitize_text_field($_GET['utm_source']);
+            if ($debug) error_log('RT Debug: Gravity - utm_source: ' . $source);
+        }
+        if (isset($_GET['utm_medium']) && !empty($_GET['utm_medium'])) {
+            $medium = sanitize_text_field($_GET['utm_medium']);
+            if ($debug) error_log('RT Debug: Gravity - utm_medium: ' . $medium);
+        } elseif (isset($_GET['urm_medium']) && !empty($_GET['urm_medium'])) {
+            // Corrección de error tipográfico
+            $medium = sanitize_text_field($_GET['urm_medium']);
+            if ($debug) error_log('RT Debug: Gravity - urm_medium (typo): ' . $medium);
+        }
+        if (isset($_GET['utm_campaign']) && !empty($_GET['utm_campaign'])) {
+            $campaign = sanitize_text_field($_GET['utm_campaign']);
+            if ($debug) error_log('RT Debug: Gravity - utm_campaign: ' . $campaign);
+        }
+
+        // PRIORIDAD 2: Cookies
+        if (empty($source) && isset($_COOKIE['rt_source'])) {
+            $source = sanitize_text_field($_COOKIE['rt_source']);
+            if ($debug) error_log('RT Debug: Gravity - Cookie source: ' . $source);
+        }
+        if (empty($medium) && isset($_COOKIE['rt_medium'])) {
+            $medium = sanitize_text_field($_COOKIE['rt_medium']);
+            if ($debug) error_log('RT Debug: Gravity - Cookie medium: ' . $medium);
+        }
+        if (empty($campaign) && isset($_COOKIE['rt_campaign'])) {
+            $campaign = sanitize_text_field($_COOKIE['rt_campaign']);
+            if ($debug) error_log('RT Debug: Gravity - Cookie campaign: ' . $campaign);
+        }
+        if (empty($referrer) && isset($_COOKIE['rt_referrer'])) {
+            $referrer = sanitize_text_field($_COOKIE['rt_referrer']);
+            if ($debug) error_log('RT Debug: Gravity - Cookie referrer: ' . $referrer);
+        }
+
+        // Defaults
+        if (empty($source)) $source = 'direct';
+        if (empty($medium)) $medium = 'none';
+        if (empty($campaign)) $campaign = 'none';
+        if (empty($referrer)) $referrer = '';
+
+        return array(
+            'source' => $source,
+            'medium' => $medium,
+            'campaign' => $campaign,
+            'referrer' => $referrer
+        );
     }
 }

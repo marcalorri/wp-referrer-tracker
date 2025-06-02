@@ -27,15 +27,67 @@ WP Referrer Tracker helps you track and analyze where your form submissions are 
 * Gravity Forms
 * Generic HTML Forms
 
-## Características
+## Características principales
 
 - Rastrea información del referente (fuente, medio, campaña y URL del referente)
-- Almacena los datos en cookies para su uso posterior
+- Almacena los datos en cookies
 - Rellena automáticamente campos ocultos en Contact Form 7, WPForms y Gravity Forms
 - Soporte para parámetros UTM (source, medium, campaign)
-- Fácil integración con cualquier formulario de WordPress
-- Soporte para múltiples prefijos de cookies para compatibilidad
-- Depuración avanzada para solucionar problemas
+- Soporte para múltiples plugins de formularios
+- Fácil integración
+- No requiere programación avanzada
+
+## ¿Cómo se obtienen los valores de tracking?
+
+El plugin sigue la siguiente prioridad para rellenar los campos de tracking en todos los formularios compatibles:
+
+| Prioridad | Fuente de datos                |
+|-----------|-------------------------------|
+| 1         | Parámetros UTM en la URL      |
+| 2         | Corrección de errores tipográficos (ej: `urm_medium`) |
+| 3         | Cookies                       |
+| 4         | Valores por defecto           |
+
+Ejemplo: Si existe `utm_source` en la URL, se usará ese valor. Si no, se buscará en cookies, y si tampoco existe, se usará el valor por defecto (`direct`, `none`, etc).
+
+## Ejemplo visual de campos insertados
+
+### Contact Form 7
+
+Los siguientes campos ocultos se añaden automáticamente (puedes verlos en el código fuente del formulario):
+
+```html
+[hidden rt_source class:js-rt-source "" default:"google"]
+[hidden rt_medium class:js-rt-medium "" default:"cpc"]
+[hidden rt_campaign class:js-rt-campaign "" default:"promo2025"]
+[hidden rt_referrer class:js-rt-referrer "" default:"https://example.com"]
+```
+
+### WPForms
+
+En el editor de WPForms, añade campos ocultos con los siguientes nombres y clases:
+
+- **Field Name**: rt_source, rt_medium, rt_campaign, rt_referrer
+- **CSS Classes**: js-rt-source, js-rt-medium, js-rt-campaign, js-rt-referrer
+
+El plugin rellenará automáticamente los valores.
+
+### Gravity Forms
+
+Se añaden automáticamente campos ocultos si no están presentes:
+
+- **Label**: Source, Medium, Campaign, Referrer
+- **Name**: rt_source, rt_medium, rt_campaign, rt_referrer
+- **Clase CSS**: js-rt-source, js-rt-medium, js-rt-campaign, js-rt-referrer
+
+## Opciones de inserción automática/manual
+
+- **Automática**: Por defecto, el plugin añade y rellena los campos ocultos automáticamente en todos los formularios compatibles si la opción está activada en los ajustes.
+- **Manual**: Si prefieres gestionar los campos manualmente, desactiva la opción de inserción automática en los ajustes y añade los campos ocultos siguiendo los ejemplos anteriores.
+
+## Debug y logs
+
+Puedes activar o desactivar el modo debug desde los ajustes del plugin. Cuando está activo, se registran los valores detectados y posibles incidencias en el log de errores de WordPress.
 
 ## Estructura del Proyecto
 

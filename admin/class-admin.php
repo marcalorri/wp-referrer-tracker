@@ -262,13 +262,18 @@ class RT_Admin {
             'rt_referrer_tracker_section'
         );
 
-        add_settings_field(
-            'rt_auto_fields',
-            __('Auto Fields', 'referrer-tracker'),
-            array($this, 'auto_fields_field'),
-            'rt_referrer_tracker',
-            'rt_referrer_tracker_section'
-        );
+        // Solo mostrar la opción de auto fields para Gravity Forms y Generic HTML Forms
+        $options = get_option('rt_settings');
+        $form_plugin = isset($options['rt_form_plugin']) ? $options['rt_form_plugin'] : 'cf7';
+        if ($form_plugin === 'gravity' || $form_plugin === 'generic') {
+            add_settings_field(
+                'rt_auto_fields',
+                __('Auto Fields', 'referrer-tracker'),
+                array($this, 'auto_fields_field'),
+                'rt_referrer_tracker',
+                'rt_referrer_tracker_section'
+            );
+        }
     }
 
     /**
