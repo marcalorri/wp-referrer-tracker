@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: Referrer Tracker for Forms and CMS
+ * Plugin Name: Referrer Tracker for Forms
  * Plugin URI: https://github.com/marcalorri/referrer-tracker
- * Description: Track and store referrer information in your WordPress forms (Contact Form 7, WPForms) and CMS
+ * Description: Track and store referrer information in your WordPress forms (Contact Form 7, WPForms and Gravity Forms) and CMS
  * Version: 1.5.2
  * Author: Marçal Orri
  * Author URI: https://github.com/marcalorri

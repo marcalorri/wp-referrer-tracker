@@ -60,98 +60,63 @@ class RT_Integration_WPForms {
             );
         }
         
-        // Get debug mode
-        $debug = get_option('referrer_tracker_debug', 'no') === 'yes';
+        // Debug functionality removed for production
         
         // Initialize values
         $source = '';
         $medium = '';
         $campaign = '';
-        $referrer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
+        $referrer = isset($_SERVER['HTTP_REFERER']) ? esc_url_raw(wp_unslash($_SERVER['HTTP_REFERER'])) : '';
         
         // PRIORITY 1: Check for UTM parameters first
-        if (isset($_GET['utm_source']) && !empty($_GET['utm_source'])) {
-            $source = sanitize_text_field($_GET['utm_source']);
-            if ($debug) {
-                error_log('RT Debug: WPForms - Found utm_source parameter: ' . $source);
-            }
+        // Note: UTM parameters are public tracking parameters, not sensitive form data
+        if (isset($_GET['utm_source']) && !empty($_GET['utm_source'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            $source = sanitize_text_field(wp_unslash($_GET['utm_source'])); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         }
         
-        if (isset($_GET['utm_medium']) && !empty($_GET['utm_medium'])) {
-            $medium = sanitize_text_field($_GET['utm_medium']);
-            if ($debug) {
-                error_log('RT Debug: WPForms - Found utm_medium parameter: ' . $medium);
-            }
-        } else if (isset($_GET['urm_medium']) && !empty($_GET['urm_medium'])) {
+        if (isset($_GET['utm_medium']) && !empty($_GET['utm_medium'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            $medium = sanitize_text_field(wp_unslash($_GET['utm_medium'])); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        } else if (isset($_GET['urm_medium']) && !empty($_GET['urm_medium'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             // Corrección para posibles errores tipográficos en los parámetros
-            $medium = sanitize_text_field($_GET['urm_medium']);
-            if ($debug) {
-                error_log('RT Debug: WPForms - Found urm_medium parameter (typo correction): ' . $medium);
-            }
+            $medium = sanitize_text_field(wp_unslash($_GET['urm_medium'])); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         }
         
-        if (isset($_GET['utm_campaign']) && !empty($_GET['utm_campaign'])) {
-            $campaign = sanitize_text_field($_GET['utm_campaign']);
-            if ($debug) {
-                error_log('RT Debug: WPForms - Found utm_campaign parameter: ' . $campaign);
-            }
+        if (isset($_GET['utm_campaign']) && !empty($_GET['utm_campaign'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            $campaign = sanitize_text_field(wp_unslash($_GET['utm_campaign'])); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         }
         
         // PRIORITY 2: If no UTM parameters, check cookies
         if (empty($source) && isset($_COOKIE['rt_source'])) {
-            $source = $_COOKIE['rt_source'];
-            if ($debug) {
-                error_log('RT Debug: WPForms - Using cookie value for source: ' . $source);
-            }
+            $source = sanitize_text_field(wp_unslash($_COOKIE['rt_source']));
         }
         
         if (empty($medium) && isset($_COOKIE['rt_medium'])) {
-            $medium = $_COOKIE['rt_medium'];
-            if ($debug) {
-                error_log('RT Debug: WPForms - Using cookie value for medium: ' . $medium);
-            }
+            $medium = sanitize_text_field(wp_unslash($_COOKIE['rt_medium']));
         }
         
         if (empty($campaign) && isset($_COOKIE['rt_campaign'])) {
-            $campaign = $_COOKIE['rt_campaign'];
-            if ($debug) {
-                error_log('RT Debug: WPForms - Using cookie value for campaign: ' . $campaign);
-            }
+            $campaign = sanitize_text_field(wp_unslash($_COOKIE['rt_campaign']));
         }
         
         // Si no hay referrer actual, usar el valor de la cookie
         if (empty($referrer) && isset($_COOKIE['rt_referrer'])) {
-            $referrer = $_COOKIE['rt_referrer'];
-            if ($debug) {
-                error_log('RT Debug: WPForms - Using cookie value for referrer: ' . $referrer);
-            }
+            $referrer = esc_url_raw(wp_unslash($_COOKIE['rt_referrer']));
         }
         
         // PRIORITY 3: Set default values if still empty
         if (empty($source)) {
             $source = 'direct';
-            if ($debug) {
-                error_log('RT Debug: WPForms - No source found, using default: direct');
-            }
         }
         
         if (empty($medium)) {
             $medium = 'none';
-            if ($debug) {
-                error_log('RT Debug: WPForms - No medium found, using default: none');
-            }
         }
         
         if (empty($campaign)) {
             $campaign = 'none';
-            if ($debug) {
-                error_log('RT Debug: WPForms - No campaign found, using default: none');
-            }
         }
         
-        if ($debug) {
-            error_log('RT Debug: WPForms - Final tracking values - source: ' . $source . ', medium: ' . $medium . ', campaign: ' . $campaign . ', referrer: ' . $referrer);
-        }
+        // Debug functionality removed for production
         
         return array(
             'source' => $source,
@@ -181,11 +146,9 @@ class RT_Integration_WPForms {
         }
         
         // Get debug mode
-        $debug = get_option('referrer_tracker_debug', 'no') === 'yes';
+        // Debug functionality removed for production
         
-        if ($debug) {
-            error_log('RT Debug: Processing WPForms hidden field - ID: ' . $field['id'] . ', Label: ' . $field['label']);
-        }
+        // Debug functionality removed for production
         
         // Get field ID and name
         $field_id = $field['id'];
@@ -198,9 +161,7 @@ class RT_Integration_WPForms {
         $campaign = $tracking_values['campaign'];
         $referrer = $tracking_values['referrer'];
         
-        if ($debug) {
-            error_log('RT Debug: Tracking values for field - source: ' . $source . ', medium: ' . $medium . ', campaign: ' . $campaign . ', referrer: ' . $referrer);
-        }
+        // Debug functionality removed for production
         
         // Check field name or label for tracking fields
         $is_source = strpos($field_name, '_source') !== false || $field_id === 8;
@@ -217,40 +178,26 @@ class RT_Integration_WPForms {
                 $properties['inputs']['primary']['class'][] = 'js-rt-source';
                 $properties['inputs']['primary']['attr']['data-field-type'] = 'source';
                 $properties['inputs']['primary']['value'] = $source;
-                
-                if ($debug) {
-                    error_log('RT Debug: Set source field value: ' . $source);
-                }
             } 
             else if ($is_medium) {
                 $properties['container']['class'][] = 'js-rt-medium';
                 $properties['inputs']['primary']['class'][] = 'js-rt-medium';
                 $properties['inputs']['primary']['attr']['data-field-type'] = 'medium';
                 $properties['inputs']['primary']['value'] = $medium;
+                $properties['inputs']['primary']['attr']['data-field-id'] = $field_id;
                 
-                if ($debug) {
-                    error_log('RT Debug: Set medium field value: ' . $medium);
-                }
             }
             else if ($is_campaign) {
                 $properties['container']['class'][] = 'js-rt-campaign';
                 $properties['inputs']['primary']['class'][] = 'js-rt-campaign';
                 $properties['inputs']['primary']['attr']['data-field-type'] = 'campaign';
-                $properties['inputs']['primary']['value'] = $campaign;
-                
-                if ($debug) {
-                    error_log('RT Debug: Set campaign field value: ' . $campaign);
-                }
+                $properties['inputs']['primary']['attr']['data-field-id'] = $field_id;
             }
             else if ($is_referrer) {
                 $properties['container']['class'][] = 'js-rt-referrer';
                 $properties['inputs']['primary']['class'][] = 'js-rt-referrer';
-                $properties['inputs']['primary']['attr']['data-field-type'] = 'referrer';
-                $properties['inputs']['primary']['value'] = $referrer;
-                
-                if ($debug) {
-                    error_log('RT Debug: Set referrer field value: ' . $referrer);
-                }
+                $properties['inputs']['primary']['value'] = esc_url_raw($referrer);
+                $properties['inputs']['primary']['attr']['data-field-id'] = $field_id;
             }
         }
         
@@ -270,11 +217,9 @@ class RT_Integration_WPForms {
         }
         
         // Get debug mode
-        $debug = get_option('referrer_tracker_debug', 'no') === 'yes';
+        // Debug functionality removed for production
         
-        if ($debug) {
-            error_log('RT Debug: Populating WPForms fields');
-        }
+        // Debug functionality removed for production
         
         // Get tracking values with proper priority
         $tracking_values = $this->get_tracking_values();
@@ -283,9 +228,7 @@ class RT_Integration_WPForms {
         $campaign = $tracking_values['campaign'];
         $referrer = $tracking_values['referrer'];
         
-        if ($debug) {
-            error_log('RT Debug: Tracking values for form population - source: ' . $source . ', medium: ' . $medium . ', campaign: ' . $campaign . ', referrer: ' . $referrer);
-        }
+        // Debug functionality removed for production
         
         // Loop through fields
         if (isset($form_data['fields']) && is_array($form_data['fields'])) {
@@ -300,27 +243,15 @@ class RT_Integration_WPForms {
                 // Check field name or ID for tracking fields
                 if (strpos($field_name, '_source') !== false || $id === 8) {
                     $form_data['fields'][$id]['default_value'] = $source;
-                    if ($debug) {
-                        error_log('RT Debug: Set source field default value: ' . $source);
-                    }
                 } 
                 else if (strpos($field_name, '_medium') !== false || $id === 9) {
                     $form_data['fields'][$id]['default_value'] = $medium;
-                    if ($debug) {
-                        error_log('RT Debug: Set medium field default value: ' . $medium);
-                    }
                 }
                 else if (strpos($field_name, '_campaign') !== false || $id === 10) {
                     $form_data['fields'][$id]['default_value'] = $campaign;
-                    if ($debug) {
-                        error_log('RT Debug: Set campaign field default value: ' . $campaign);
-                    }
                 }
                 else if (strpos($field_name, '_referrer') !== false || $id === 11) {
                     $form_data['fields'][$id]['default_value'] = $referrer;
-                    if ($debug) {
-                        error_log('RT Debug: Set referrer field default value: ' . $referrer);
-                    }
                 }
             }
         }

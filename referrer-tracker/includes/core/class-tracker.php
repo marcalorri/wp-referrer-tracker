@@ -62,26 +62,14 @@ class RT_Tracker {
             return;
         }
         
-        $debug = get_option('referrer_tracker_debug', 'no') === 'yes';
-        
-        if ($debug) {
-            error_log('RT Debug: Setting cookies');
-            error_log('RT Debug: Request URI: ' . $_SERVER['REQUEST_URI']);
-            if (isset($_SERVER['HTTP_REFERER'])) {
-                error_log('RT Debug: HTTP_REFERER: ' . $_SERVER['HTTP_REFERER']);
-            }
-            error_log('RT Debug: GET params: ' . print_r($_GET, true));
-        }
+        // Debug functionality removed for production
         
         // Get the referrer URL (full URL, not just domain)
-        $referrer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
+        $referrer = isset($_SERVER['HTTP_REFERER']) ? esc_url_raw(wp_unslash($_SERVER['HTTP_REFERER'])) : '';
         
         // Si ya existe una cookie de referrer, no la sobreescribimos (mantenemos el referrer original)
         if (isset($_COOKIE['rt_referrer']) && !empty($_COOKIE['rt_referrer'])) {
-            $referrer = $_COOKIE['rt_referrer'];
-            if ($debug) {
-                error_log('RT Debug: Using existing referrer cookie value: ' . $referrer);
-            }
+            $referrer = esc_url_raw(wp_unslash($_COOKIE['rt_referrer']));
         }
         
         // Get UTM parameters if present
@@ -90,37 +78,23 @@ class RT_Tracker {
         $campaign = '';
         
         // Check for UTM parameters (priority 1)
-        if (isset($_GET['utm_source']) && !empty($_GET['utm_source'])) {
-            $source = sanitize_text_field($_GET['utm_source']);
-            if ($debug) {
-                error_log('RT Debug: Found utm_source parameter: ' . $source);
-            }
+        // Note: UTM parameters are public tracking parameters, not sensitive form data
+        if (isset($_GET['utm_source']) && !empty($_GET['utm_source'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            $source = sanitize_text_field(wp_unslash($_GET['utm_source'])); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         }
         
-        if (isset($_GET['utm_medium']) && !empty($_GET['utm_medium'])) {
-            $medium = sanitize_text_field($_GET['utm_medium']);
-            if ($debug) {
-                error_log('RT Debug: Found utm_medium parameter: ' . $medium);
-            }
-        } else if (isset($_GET['urm_medium']) && !empty($_GET['urm_medium'])) {
+        if (isset($_GET['utm_medium']) && !empty($_GET['utm_medium'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            $medium = sanitize_text_field(wp_unslash($_GET['utm_medium'])); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        } else if (isset($_GET['urm_medium']) && !empty($_GET['urm_medium'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             // Corrección para posibles errores tipográficos en los parámetros
-            $medium = sanitize_text_field($_GET['urm_medium']);
-            if ($debug) {
-                error_log('RT Debug: Found urm_medium parameter (typo correction): ' . $medium);
-            }
+            $medium = sanitize_text_field(wp_unslash($_GET['urm_medium'])); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         }
         
-        if (isset($_GET['utm_campaign']) && !empty($_GET['utm_campaign'])) {
-            $campaign = sanitize_text_field($_GET['utm_campaign']);
-            if ($debug) {
-                error_log('RT Debug: Found utm_campaign parameter: ' . $campaign);
-            }
+        if (isset($_GET['utm_campaign']) && !empty($_GET['utm_campaign'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            $campaign = sanitize_text_field(wp_unslash($_GET['utm_campaign'])); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         }
         
-        if ($debug) {
-            error_log('RT Debug: UTM parameters - source: ' . $source . ', medium: ' . $medium . ', campaign: ' . $campaign);
-            error_log('RT Debug: Referrer URL: ' . $referrer);
-        }
+        // Debug information removed for production
         
         // If no UTM parameters, use the parse_referrer function to determine source and medium
         if ((empty($source) || empty($medium)) && !empty($referrer)) {
@@ -128,23 +102,14 @@ class RT_Tracker {
             
             if (empty($source)) {
                 $source = $parsed_data['source'];
-                if ($debug) {
-                    error_log('RT Debug: No utm_source, using parsed source: ' . $source);
-                }
             }
             
             if (empty($medium)) {
                 $medium = $parsed_data['medium'];
-                if ($debug) {
-                    error_log('RT Debug: No utm_medium, using parsed medium: ' . $medium);
-                }
             }
             
             if (empty($campaign) && !empty($parsed_data['campaign'])) {
                 $campaign = $parsed_data['campaign'];
-                if ($debug) {
-                    error_log('RT Debug: No utm_campaign, using parsed campaign: ' . $campaign);
-                }
             }
         }
         
@@ -152,40 +117,24 @@ class RT_Tracker {
         if (empty($source)) {
             $source = 'direct';
             
-            if ($debug) {
-                error_log('RT Debug: No source found, setting to "direct"');
-            }
-            
             // If direct traffic and no medium specified, set it to 'none'
             if (empty($medium)) {
                 $medium = 'none';
-                
-                if ($debug) {
-                    error_log('RT Debug: No medium found for direct traffic, setting to "none"');
-                }
             }
         }
         
         // If no campaign specified, set it to 'none'
         if (empty($campaign)) {
             $campaign = 'none';
-            
-            if ($debug) {
-                error_log('RT Debug: No campaign found, setting to "none"');
-            }
         }
         
-        if ($debug) {
-            error_log('RT Debug: Final values before setting cookies - source: ' . $source . ', medium: ' . $medium . ', campaign: ' . $campaign . ', referrer: ' . $referrer);
-        }
+        // Debug information removed for production
         
         // Set cookie expiration (30 days by default)
         $expire = time() + (30 * 24 * 60 * 60);
         $path = '/';
         
-        if ($debug) {
-            error_log('RT Debug: Setting cookies with values - source: ' . $source . ', medium: ' . $medium . ', campaign: ' . $campaign . ', referrer: ' . $referrer);
-        }
+        // Debug information removed for production
         
         // Delete any existing cookies first to prevent duplicates
         if (isset($_COOKIE['rt_source'])) {
@@ -216,11 +165,6 @@ class RT_Tracker {
         // Solo establecemos la cookie de referrer si no existe o si hay un nuevo referrer
         if (!empty($referrer)) {
             setcookie('rt_referrer', $referrer, $expire, $path);
-            if ($debug) {
-                error_log('RT Debug: Setting rt_referrer cookie with value: ' . $referrer);
-            }
-        } else if ($debug) {
-            error_log('RT Debug: Not setting rt_referrer cookie because referrer is empty');
         }
         
         // Also set in $_COOKIE for immediate use in this request
@@ -231,11 +175,7 @@ class RT_Tracker {
             $_COOKIE['rt_referrer'] = $referrer;
         }
         
-        if ($debug) {
-            error_log('RT Debug: Cookies set successfully');
-            error_log('RT Debug: $_COOKIE after setting: ' . print_r($_COOKIE, true));
-            error_log('RT Debug: rt_referrer cookie value: ' . (isset($_COOKIE['rt_referrer']) ? $_COOKIE['rt_referrer'] : 'not set'));
-        }
+        // Debug information removed for production
     }
 
     /**
@@ -252,9 +192,6 @@ class RT_Tracker {
      *               - campaign: The campaign name (from UTM parameters)
      */
     private function parse_referrer($referrer) {
-        // Get debug mode
-        $debug = get_option('referrer_tracker_debug', 'no') === 'yes';
-        
         $parsed = array(
             'source' => 'direct',
             'medium' => 'none',
@@ -262,9 +199,6 @@ class RT_Tracker {
         );
 
         if (empty($referrer)) {
-            if ($debug) {
-                error_log('RT Debug: Empty referrer, using default values');
-            }
             return $parsed;
         }
 
@@ -274,28 +208,16 @@ class RT_Tracker {
 
         // Si no hay host, devolver valores por defecto
         if (empty($host)) {
-            if ($debug) {
-                error_log('RT Debug: No host in referrer URL, using default values');
-            }
             return $parsed;
         }
-        
-        // Obtener el host actual
-        $current_host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
-        
-        if ($debug) {
-            error_log('RT Debug: Referrer host: ' . $host);
-            error_log('RT Debug: Current host: ' . $current_host);
-        }
-        
+
+        // Obtener el host actual para comparar
+        $current_host = isset($_SERVER['HTTP_HOST']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_HOST'])) : '';
+
         // Comprobar si el referrer es el mismo sitio
         if ($host === $current_host) {
             $parsed['source'] = 'direct';
             $parsed['medium'] = 'none';
-            
-            if ($debug) {
-                error_log('RT Debug: Referrer is from the same site, setting source to "direct" and medium to "none"');
-            }
             
             // Incluso si es interno, revisamos si hay parámetros UTM en la URL del referrer
             if (isset($parsed_url['query'])) {
@@ -304,9 +226,6 @@ class RT_Tracker {
                 // Extraer parámetros UTM del referrer si existen
                 if (isset($query_params['utm_campaign']) && !empty($query_params['utm_campaign'])) {
                     $parsed['campaign'] = sanitize_text_field($query_params['utm_campaign']);
-                    if ($debug) {
-                        error_log('RT Debug: Found utm_campaign in referrer URL: ' . $parsed['campaign']);
-                    }
                 }
             }
             
@@ -314,23 +233,17 @@ class RT_Tracker {
         }
         
         // Comprobar parámetros de campaña pagada en la URL actual
-        $query_params = $_GET;
+        // Note: These are public tracking parameters, not sensitive form data
+        $query_params = $_GET; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         
         // Google Ads (gclid)
         if (isset($query_params['gclid'])) {
             $parsed['source'] = 'google';
             $parsed['medium'] = 'cpc';
             
-            if ($debug) {
-                error_log('RT Debug: Found gclid parameter, setting source to "google" and medium to "cpc"');
-            }
-            
             // Extraer campaña de UTM si existe
             if (isset($query_params['utm_campaign']) && !empty($query_params['utm_campaign'])) {
                 $parsed['campaign'] = sanitize_text_field($query_params['utm_campaign']);
-                if ($debug) {
-                    error_log('RT Debug: Found utm_campaign parameter with gclid: ' . $parsed['campaign']);
-                }
             }
             
             return $parsed;
@@ -341,16 +254,9 @@ class RT_Tracker {
             $parsed['source'] = 'facebook';
             $parsed['medium'] = 'paid-social';
             
-            if ($debug) {
-                error_log('RT Debug: Found fbclid parameter, setting source to "facebook" and medium to "paid-social"');
-            }
-            
             // Extraer campaña de UTM si existe
             if (isset($query_params['utm_campaign']) && !empty($query_params['utm_campaign'])) {
                 $parsed['campaign'] = sanitize_text_field($query_params['utm_campaign']);
-                if ($debug) {
-                    error_log('RT Debug: Found utm_campaign parameter with fbclid: ' . $parsed['campaign']);
-                }
             }
             
             return $parsed;
@@ -361,16 +267,9 @@ class RT_Tracker {
             $parsed['source'] = 'bing';
             $parsed['medium'] = 'cpc';
             
-            if ($debug) {
-                error_log('RT Debug: Found msclkid parameter, setting source to "bing" and medium to "cpc"');
-            }
-            
             // Extraer campaña de UTM si existe
             if (isset($query_params['utm_campaign']) && !empty($query_params['utm_campaign'])) {
                 $parsed['campaign'] = sanitize_text_field($query_params['utm_campaign']);
-                if ($debug) {
-                    error_log('RT Debug: Found utm_campaign parameter with msclkid: ' . $parsed['campaign']);
-                }
             }
             
             return $parsed;
@@ -381,16 +280,9 @@ class RT_Tracker {
             $parsed['source'] = 'tiktok';
             $parsed['medium'] = 'paid-social';
             
-            if ($debug) {
-                error_log('RT Debug: Found ttclid parameter, setting source to "tiktok" and medium to "paid-social"');
-            }
-            
             // Extraer campaña de UTM si existe
             if (isset($query_params['utm_campaign']) && !empty($query_params['utm_campaign'])) {
                 $parsed['campaign'] = sanitize_text_field($query_params['utm_campaign']);
-                if ($debug) {
-                    error_log('RT Debug: Found utm_campaign parameter with ttclid: ' . $parsed['campaign']);
-                }
             }
             
             return $parsed;
@@ -399,9 +291,6 @@ class RT_Tracker {
         // Extraer campaña de UTM de la URL actual si existe
         if (isset($query_params['utm_campaign']) && !empty($query_params['utm_campaign'])) {
             $parsed['campaign'] = sanitize_text_field($query_params['utm_campaign']);
-            if ($debug) {
-                error_log('RT Debug: Found utm_campaign parameter in current URL: ' . $parsed['campaign']);
-            }
         }
         
         // Identificar fuentes de tráfico comunes
@@ -435,10 +324,6 @@ class RT_Tracker {
                     $parsed['source'] = $engine;
                     $parsed['medium'] = $medium;
                     
-                    if ($debug) {
-                        error_log('RT Debug: Referrer identified as search engine: ' . $engine . ', medium: ' . $medium);
-                    }
-                    
                     return $parsed;
                 }
             }
@@ -454,10 +339,6 @@ class RT_Tracker {
                     $parsed['source'] = $network;
                     $parsed['medium'] = $medium;
                     
-                    if ($debug) {
-                        error_log('RT Debug: Referrer identified as social network: ' . $network . ', medium: ' . $medium);
-                    }
-                    
                     return $parsed;
                 }
             }
@@ -466,10 +347,6 @@ class RT_Tracker {
         // Si llegamos aquí, es un referrer genérico
         $parsed['source'] = $host;
         $parsed['medium'] = 'referral';
-        
-        if ($debug) {
-            error_log('RT Debug: Generic referrer, setting source to host: ' . $host . ' and medium to "referral"');
-        }
 
         return $parsed;
     }
@@ -478,12 +355,6 @@ class RT_Tracker {
      * Enqueue scripts and styles
      */
     public function enqueue_scripts() {
-        // Get debug mode
-        $debug = get_option('referrer_tracker_debug', 'no') === 'yes';
-        
-        if ($debug) {
-            error_log('RT Debug: Enqueuing scripts');
-        }
         
         // Enqueue the JavaScript file
         wp_enqueue_script(
@@ -495,10 +366,10 @@ class RT_Tracker {
         );
         
         // Get tracking values from cookies
-        $source = isset($_COOKIE['rt_source']) ? $_COOKIE['rt_source'] : '';
-        $medium = isset($_COOKIE['rt_medium']) ? $_COOKIE['rt_medium'] : '';
-        $campaign = isset($_COOKIE['rt_campaign']) ? $_COOKIE['rt_campaign'] : '';
-        $referrer = isset($_COOKIE['rt_referrer']) ? $_COOKIE['rt_referrer'] : '';
+        $source = isset($_COOKIE['rt_source']) ? sanitize_text_field(wp_unslash($_COOKIE['rt_source'])) : '';
+        $medium = isset($_COOKIE['rt_medium']) ? sanitize_text_field(wp_unslash($_COOKIE['rt_medium'])) : '';
+        $campaign = isset($_COOKIE['rt_campaign']) ? sanitize_text_field(wp_unslash($_COOKIE['rt_campaign'])) : '';
+        $referrer = isset($_COOKIE['rt_referrer']) ? esc_url_raw(wp_unslash($_COOKIE['rt_referrer'])) : '';
         
         // Pass values to JavaScript
         wp_localize_script(
@@ -509,13 +380,8 @@ class RT_Tracker {
                 'medium' => $medium,
                 'campaign' => $campaign,
                 'referrer' => $referrer,
-                'debug' => $debug ? 'yes' : 'no'
             )
         );
-        
-        if ($debug) {
-            error_log('RT Debug: Values passed to JavaScript - source: ' . $source . ', medium: ' . $medium . ', campaign: ' . $campaign . ', referrer: ' . $referrer);
-        }
     }
 
     /**
@@ -598,12 +464,9 @@ class RT_Tracker {
     }
 
     /**
-     * Debug logging
+     * Debug logging (removed for production)
      */
     private function debug_log($message) {
-        if (defined('WP_DEBUG') && WP_DEBUG === true && defined('WP_DEBUG_LOG') && WP_DEBUG_LOG === true) {
-            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-            error_log('RT: ' . $message);
-        }
+        // Debug functionality removed for production
     }
 }

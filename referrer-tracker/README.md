@@ -1,16 +1,16 @@
-# Referrer Tracker for Forms and CMS
+# Referrer Tracker for Forms
 Contributors: marcalorri
 Tags: forms, tracking, analytics, referrer, utm
-Tested up to: 6.7
-Stable tag: 1.5.1
+Tested up to: 6.8
+Stable tag: 1.5.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Referrer Tracker for Forms and CMS helps you track and analyze where your form submissions are coming from by automatically adding hidden fields to your forms that capture referrer information.
+Track and analyze where your form submissions come from by automatically adding hidden fields that capture referrer information.
 
 == Description ==
 
-WP Referrer Tracker helps you track and analyze where your form submissions are coming from by automatically adding hidden fields to your forms that capture referrer information.
+Referrer Tracker helps you track and analyze where your form submissions are coming from by automatically adding hidden fields to your forms that capture referrer information.
 
 = Key Features =
 
@@ -27,34 +27,34 @@ WP Referrer Tracker helps you track and analyze where your form submissions are 
 * Gravity Forms
 * Generic HTML Forms
 
-## Características principales
+## Key Features
 
-- Rastrea información del referente (fuente, medio, campaña y URL del referente)
-- Almacena los datos en cookies
-- Rellena automáticamente campos ocultos en Contact Form 7, WPForms y Gravity Forms
-- Soporte para parámetros UTM (source, medium, campaign)
-- Soporte para múltiples plugins de formularios
-- Fácil integración
-- No requiere programación avanzada
+- Tracks referrer information (source, medium, campaign and referrer URL)
+- Stores data in cookies
+- Automatically fills hidden fields in Contact Form 7, WPForms and Gravity Forms
+- Support for UTM parameters (source, medium, campaign)
+- Support for multiple form plugins
+- Easy integration
+- No advanced programming required
 
-## ¿Cómo se obtienen los valores de tracking?
+## How are tracking values obtained?
 
-El plugin sigue la siguiente prioridad para rellenar los campos de tracking en todos los formularios compatibles:
+The plugin follows this priority order to fill tracking fields in all compatible forms:
 
-| Prioridad | Fuente de datos                |
-|-----------|-------------------------------|
-| 1         | Parámetros UTM en la URL      |
-| 2         | Corrección de errores tipográficos (ej: `urm_medium`) |
-| 3         | Cookies                       |
-| 4         | Valores por defecto           |
+| Priority | Data Source                |
+|----------|---------------------------|
+| 1        | UTM parameters in URL     |
+| 2        | Typo correction (e.g. `urm_medium`) |
+| 3        | Cookies                   |
+| 4        | Default values            |
 
-Ejemplo: Si existe `utm_source` en la URL, se usará ese valor. Si no, se buscará en cookies, y si tampoco existe, se usará el valor por defecto (`direct`, `none`, etc).
+Example: If `utm_source` exists in the URL, that value will be used. If not, it will look in cookies, and if it doesn't exist there either, the default value will be used (`direct`, `none`, etc).
 
-## Ejemplo visual de campos insertados
+## Visual example of inserted fields
 
 ### Contact Form 7
 
-Los siguientes campos ocultos se añaden automáticamente (puedes verlos en el código fuente del formulario):
+The following hidden fields are added automatically (you can see them in the form source code):
 
 ```html
 [hidden rt_source class:js-rt-source "" default:"google"]
@@ -65,61 +65,60 @@ Los siguientes campos ocultos se añaden automáticamente (puedes verlos en el c
 
 ### WPForms
 
-En el editor de WPForms, añade campos ocultos con los siguientes nombres y clases:
+In the WPForms editor, add hidden fields with the following names and classes:
 
 - **Field Name**: rt_source, rt_medium, rt_campaign, rt_referrer
 - **CSS Classes**: js-rt-source, js-rt-medium, js-rt-campaign, js-rt-referrer
 
-El plugin rellenará automáticamente los valores.
+The plugin will automatically populate the values.
 
 ### Gravity Forms
 
-Se añaden automáticamente campos ocultos si no están presentes:
+Hidden fields are automatically added if not present:
 
 - **Label**: Source, Medium, Campaign, Referrer
 - **Name**: rt_source, rt_medium, rt_campaign, rt_referrer
-- **Clase CSS**: js-rt-source, js-rt-medium, js-rt-campaign, js-rt-referrer
+- **CSS Class**: js-rt-source, js-rt-medium, js-rt-campaign, js-rt-referrer
 
-## Opciones de inserción automática/manual
+## Automatic/Manual insertion options
 
-- **Automática**: Por defecto, el plugin añade y rellena los campos ocultos automáticamente en todos los formularios compatibles si la opción está activada en los ajustes.
-- **Manual**: Si prefieres gestionar los campos manualmente, desactiva la opción de inserción automática en los ajustes y añade los campos ocultos siguiendo los ejemplos anteriores.
+- **Automatic**: By default, the plugin adds and fills hidden fields automatically in all compatible forms if the option is enabled in settings.
+- **Manual**: If you prefer to manage fields manually, disable the automatic insertion option in settings and add the hidden fields following the examples above.
 
-## Debug y logs
+## Debug and logs
 
-Puedes activar o desactivar el modo debug desde los ajustes del plugin. Cuando está activo, se registran los valores detectados y posibles incidencias en el log de errores de WordPress.
+You can enable or disable debug mode from the plugin settings. When active, detected values and possible issues are logged in the WordPress error log.
 
-## Estructura del Proyecto
+## Project Structure
 
-El plugin ha sido reorganizado para mejorar la mantenibilidad y separación de responsabilidades:
+The plugin has been reorganized to improve maintainability and separation of responsibilities:
 
-- **admin/**: Contiene la funcionalidad relacionada con el panel de administración de WordPress.
-  - `class-admin.php`: Gestiona todas las funciones administrativas, incluyendo la página de configuración.
+- **admin/**: Contains functionality related to the WordPress administration panel.
+  - `class-admin.php`: Manages all administrative functions, including the configuration page.
 
-- **includes/**: Contiene las clases principales del plugin.
-  - `class-referrer-tracker.php`: Clase principal que inicializa todos los componentes.
-  - **core/**: Contiene las funcionalidades principales.
-    - `class-tracker.php`: Gestiona el seguimiento de referentes, cookies y valores.
+- **includes/**: Contains the main plugin classes.
+  - `class-referrer-tracker.php`: Main class that initializes all components.
+  - **core/**: Contains the main functionalities.
+    - `class-tracker.php`: Manages referrer tracking, cookies and values.
 
-- **integrations/**: Contiene las integraciones con diferentes plugins de formularios.
-  - `class-cf7.php`: Integración con Contact Form 7.
-  - `class-wpforms.php`: Integración con WPForms.
-  - `class-gravity.php`: Integración con Gravity Forms.
+- **integrations/**: Contains integrations with different form plugins.
+  - `class-cf7.php`: Contact Form 7 integration.
+  - `class-wpforms.php`: WPForms integration.
+  - `class-gravity.php`: Gravity Forms integration.
 
-- **js/**: Contiene los archivos JavaScript para la funcionalidad del lado del cliente.
-  - `referrer-tracker.js`: Maneja el seguimiento de referentes en el navegador.
+- **js/**: Contains JavaScript files for client-side functionality.
 
 == Installation ==
 
 1. Upload the plugin files to `/wp-content/plugins/referrer-tracker`
 2. Activate the plugin through the 'Plugins' menu in WordPress
-3. Go to Settings > Referrer Tracker for Forms and CMS to configure
+3. Go to Settings > Referrer Tracker for Forms to configure
 
 == Configuration ==
 
 1. Select your form plugin (WPForms, Contact Form 7, etc.)
 2. Configure your field prefix (default: rt_)
-3. For Contact Form 7 and WPForms: Enable "Auto-insert/handle Hidden Fields" to automatically add and manage tracking fields
+{{ ... }}
 4. Save changes
 
 == Usage ==
@@ -193,15 +192,15 @@ Yes. The plugin only tracks basic referrer information that is already available
 == Changelog ==
 
 = 1.5.2 =
-* Reorganización completa del código para mejorar la mantenibilidad
-* Separación de funcionalidades en clases específicas
-* Creación de integraciones modulares para cada plugin de formularios
-* Mejora de la estructura de directorios
+* Complete code reorganization to improve maintainability
+* Separation of functionalities into specific classes
+* Creation of modular integrations for each form plugin
+* Improvement of directory structure
 
 = 1.5.1 =
-* Actualizado la versión del plugin
-* Agregado soporte para múltiples prefijos de cookies
-* Mejorada la depuración avanzada para solucionar problemas
+* Updated plugin version
+* Added support for multiple cookie prefixes
+* Improved advanced debugging for troubleshooting
 
 = 1.5.0 =
 * Added WPForms integration for hidden fields
@@ -233,7 +232,7 @@ Yes. The plugin only tracks basic referrer information that is already available
 == Upgrade Notice ==
 
 = 1.5.2 =
-Esta versión incluye una reorganización completa del código para mejorar la mantenibilidad. No hay cambios en la funcionalidad, pero la estructura interna ha sido mejorada significativamente.
+This version includes a complete code reorganization to improve maintainability. There are no functionality changes, but the internal structure has been significantly improved.
 
 = 1.5.1 =
 This version adds support for multiple cookie prefixes and improves advanced debugging. Upgrade recommended for all users.

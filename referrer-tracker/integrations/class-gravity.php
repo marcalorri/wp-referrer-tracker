@@ -51,11 +51,7 @@ class RT_Integration_Gravity {
      */
     public function add_hidden_fields_gravity($form) {
         // Get debug mode
-        $debug = get_option('referrer_tracker_debug', 'no') === 'yes';
-        
-        if ($debug) {
-            error_log('RT Debug: Processing Gravity Forms form - ID: ' . $form['id']);
-        }
+        // Debug functionality removed for production
         
         $prefix = $this->field_prefix;
         $has_source = false;
@@ -149,16 +145,13 @@ class RT_Integration_Gravity {
      * @return array Modified form data
      */
     public function populate_gravity_fields($form) {
-        $debug = get_option('referrer_tracker_debug', 'no') === 'yes';
         $tracking = $this->get_tracking_values();
         $source = $tracking['source'];
         $medium = $tracking['medium'];
         $campaign = $tracking['campaign'];
         $referrer = $tracking['referrer'];
 
-        if ($debug) {
-            error_log('RT Debug: Populating Gravity Forms fields - source: ' . $source . ', medium: ' . $medium . ', campaign: ' . $campaign . ', referrer: ' . $referrer);
-        }
+        // Debug functionality removed for production
 
         // Populate fields
         foreach ($form['fields'] as &$field) {
@@ -194,43 +187,36 @@ class RT_Integration_Gravity {
         $source = '';
         $medium = '';
         $campaign = '';
-        $referrer = isset($_SERVER['HTTP_REFERER']) ? sanitize_text_field($_SERVER['HTTP_REFERER']) : '';
-        $debug = get_option('referrer_tracker_debug', 'no') === 'yes';
+        $referrer = isset($_SERVER['HTTP_REFERER']) ? esc_url_raw(wp_unslash($_SERVER['HTTP_REFERER'])) : '';
+        // Debug functionality removed for production
 
         // PRIORIDAD 1: UTM en URL
-        if (isset($_GET['utm_source']) && !empty($_GET['utm_source'])) {
-            $source = sanitize_text_field($_GET['utm_source']);
-            if ($debug) error_log('RT Debug: Gravity - utm_source: ' . $source);
+        // Note: UTM parameters are public tracking parameters, not sensitive form data
+        if (isset($_GET['utm_source']) && !empty($_GET['utm_source'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            $source = sanitize_text_field(wp_unslash($_GET['utm_source'])); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         }
-        if (isset($_GET['utm_medium']) && !empty($_GET['utm_medium'])) {
-            $medium = sanitize_text_field($_GET['utm_medium']);
-            if ($debug) error_log('RT Debug: Gravity - utm_medium: ' . $medium);
-        } elseif (isset($_GET['urm_medium']) && !empty($_GET['urm_medium'])) {
+        if (isset($_GET['utm_medium']) && !empty($_GET['utm_medium'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            $medium = sanitize_text_field(wp_unslash($_GET['utm_medium'])); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        } elseif (isset($_GET['urm_medium']) && !empty($_GET['urm_medium'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             // Corrección de error tipográfico
-            $medium = sanitize_text_field($_GET['urm_medium']);
-            if ($debug) error_log('RT Debug: Gravity - urm_medium (typo): ' . $medium);
+            $medium = sanitize_text_field(wp_unslash($_GET['urm_medium'])); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         }
-        if (isset($_GET['utm_campaign']) && !empty($_GET['utm_campaign'])) {
-            $campaign = sanitize_text_field($_GET['utm_campaign']);
-            if ($debug) error_log('RT Debug: Gravity - utm_campaign: ' . $campaign);
+        if (isset($_GET['utm_campaign']) && !empty($_GET['utm_campaign'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            $campaign = sanitize_text_field(wp_unslash($_GET['utm_campaign'])); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         }
 
         // PRIORIDAD 2: Cookies
         if (empty($source) && isset($_COOKIE['rt_source'])) {
-            $source = sanitize_text_field($_COOKIE['rt_source']);
-            if ($debug) error_log('RT Debug: Gravity - Cookie source: ' . $source);
+            $source = sanitize_text_field(wp_unslash($_COOKIE['rt_source']));
         }
         if (empty($medium) && isset($_COOKIE['rt_medium'])) {
-            $medium = sanitize_text_field($_COOKIE['rt_medium']);
-            if ($debug) error_log('RT Debug: Gravity - Cookie medium: ' . $medium);
+            $medium = sanitize_text_field(wp_unslash($_COOKIE['rt_medium']));
         }
         if (empty($campaign) && isset($_COOKIE['rt_campaign'])) {
-            $campaign = sanitize_text_field($_COOKIE['rt_campaign']);
-            if ($debug) error_log('RT Debug: Gravity - Cookie campaign: ' . $campaign);
+            $campaign = sanitize_text_field(wp_unslash($_COOKIE['rt_campaign']));
         }
         if (empty($referrer) && isset($_COOKIE['rt_referrer'])) {
-            $referrer = sanitize_text_field($_COOKIE['rt_referrer']);
-            if ($debug) error_log('RT Debug: Gravity - Cookie referrer: ' . $referrer);
+            $referrer = esc_url_raw(wp_unslash($_COOKIE['rt_referrer']));
         }
 
         // Defaults
@@ -245,5 +231,45 @@ class RT_Integration_Gravity {
             'campaign' => $campaign,
             'referrer' => $referrer
         );
+    }
+
+    /**
+     * Dynamic value for source field
+     *
+     * @return string Source value
+     */
+    public function gform_dynamic_value_source() {
+        $tracking = $this->get_tracking_values();
+        return $tracking['source'];
+    }
+
+    /**
+     * Dynamic value for medium field
+     *
+     * @return string Medium value
+     */
+    public function gform_dynamic_value_medium() {
+        $tracking = $this->get_tracking_values();
+        return $tracking['medium'];
+    }
+
+    /**
+     * Dynamic value for campaign field
+     *
+     * @return string Campaign value
+     */
+    public function gform_dynamic_value_campaign() {
+        $tracking = $this->get_tracking_values();
+        return $tracking['campaign'];
+    }
+
+    /**
+     * Dynamic value for referrer field
+     *
+     * @return string Referrer value
+     */
+    public function gform_dynamic_value_referrer() {
+        $tracking = $this->get_tracking_values();
+        return $tracking['referrer'];
     }
 }

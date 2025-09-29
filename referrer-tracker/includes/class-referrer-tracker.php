@@ -153,17 +153,12 @@ class RT_Referrer_Tracker {
 
     /**
      * Load plugin text domain
+     * 
+     * Note: Since WordPress 4.6, load_plugin_textdomain() is automatically handled
+     * by WordPress for plugins hosted on WordPress.org. This method is no longer needed.
      */
     public function load_textdomain() {
-        // Make sure WordPress functions are available
-        if (!function_exists('load_plugin_textdomain')) {
-            return;
-        }
-        
-        load_plugin_textdomain(
-            'referrer-tracker',
-            false,
-            dirname(plugin_basename(RT_PLUGIN_FILE)) . '/languages/'
-        );
+        // WordPress automatically loads translations for plugins hosted on WordPress.org
+        // No manual call to load_plugin_textdomain() is needed since WordPress 4.6
     }
 }

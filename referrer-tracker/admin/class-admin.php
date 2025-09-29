@@ -45,7 +45,7 @@ class RT_Admin {
     public function display_settings_page() {
         ?>
         <div class="wrap">
-            <h1><?php echo get_admin_page_title(); ?></h1>
+            <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
 
             <?php
             settings_errors('referrer_tracker');
@@ -359,7 +359,7 @@ class RT_Admin {
         }
         ?>
         <input type="checkbox" name="rt_settings[rt_auto_fields]" value="1" <?php checked($checked, true); ?> />
-        <p class="description">Automatically insert hidden fields into <?php echo $plugin_text; ?></p>
+        <p class="description">Automatically insert hidden fields into <?php echo esc_html($plugin_text); ?></p>
         <?php
     }
 }
