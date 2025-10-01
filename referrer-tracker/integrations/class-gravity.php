@@ -10,11 +10,11 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Class RT_Integration_Gravity
+ * Class Refetrfo_Integration_Gravity
  * 
  * Handles integration with Gravity Forms
  */
-class RT_Integration_Gravity {
+class Refetrfo_Integration_Gravity {
     /**
      * Field prefix for the tracking fields
      *
@@ -27,20 +27,20 @@ class RT_Integration_Gravity {
      */
     public function __construct() {
         // Get settings
-        $options = get_option('rt_settings');
-        $this->field_prefix = isset($options['rt_field_prefix']) ? $options['rt_field_prefix'] : 'rt_';
+        $options = get_option('refetrfo_settings');
+        $this->field_prefix = isset($options['refetrfo_field_prefix']) ? $options['refetrfo_field_prefix'] : 'refetrfo_';
 
         // Si está activada la inserción automática de campos
-        if (isset($options['rt_auto_fields']) && $options['rt_auto_fields']) {
+        if (isset($options['refetrfo_auto_fields']) && $options['refetrfo_auto_fields']) {
             // Add Gravity Forms integration
             add_filter('gform_pre_render', array($this, 'add_hidden_fields_gravity'));
             add_filter('gform_pre_validation', array($this, 'populate_gravity_fields'));
         }
         // Siempre añadir filtros para rellenar dinámicamente los campos ocultos
-        add_filter('gform_field_value_rt_source', array($this, 'gform_dynamic_value_source'));
-        add_filter('gform_field_value_rt_medium', array($this, 'gform_dynamic_value_medium'));
-        add_filter('gform_field_value_rt_campaign', array($this, 'gform_dynamic_value_campaign'));
-        add_filter('gform_field_value_rt_referrer', array($this, 'gform_dynamic_value_referrer'));
+        add_filter('gform_field_value_refetrfo_source', array($this, 'gform_dynamic_value_source'));
+        add_filter('gform_field_value_refetrfo_medium', array($this, 'gform_dynamic_value_medium'));
+        add_filter('gform_field_value_refetrfo_campaign', array($this, 'gform_dynamic_value_campaign'));
+        add_filter('gform_field_value_refetrfo_referrer', array($this, 'gform_dynamic_value_referrer'));
     }
 
     /**
@@ -66,22 +66,22 @@ class RT_Integration_Gravity {
                 
                 if (strpos($field_label, 'source') !== false) {
                     $has_source = true;
-                    $field->cssClass .= ' js-rt-source';
+                    $field->cssClass .= ' js-refetrfo-source';
                 }
                 
                 if (strpos($field_label, 'medium') !== false) {
                     $has_medium = true;
-                    $field->cssClass .= ' js-rt-medium';
+                    $field->cssClass .= ' js-refetrfo-medium';
                 }
                 
                 if (strpos($field_label, 'campaign') !== false) {
                     $has_campaign = true;
-                    $field->cssClass .= ' js-rt-campaign';
+                    $field->cssClass .= ' js-refetrfo-campaign';
                 }
                 
                 if (strpos($field_label, 'referrer') !== false) {
                     $has_referrer = true;
-                    $field->cssClass .= ' js-rt-referrer';
+                    $field->cssClass .= ' js-refetrfo-referrer';
                 }
             }
         }
@@ -93,7 +93,7 @@ class RT_Integration_Gravity {
                 'id' => 1000, // Use a high ID to avoid conflicts
                 'formId' => $form['id'],
                 'label' => 'Source',
-                'cssClass' => 'js-rt-source',
+                'cssClass' => 'js-refetrfo-source',
                 'inputName' => $prefix . 'source'
             ));
             $form['fields'][] = $source_field;
@@ -105,7 +105,7 @@ class RT_Integration_Gravity {
                 'id' => 1001,
                 'formId' => $form['id'],
                 'label' => 'Medium',
-                'cssClass' => 'js-rt-medium',
+                'cssClass' => 'js-refetrfo-medium',
                 'inputName' => $prefix . 'medium'
             ));
             $form['fields'][] = $medium_field;
@@ -117,7 +117,7 @@ class RT_Integration_Gravity {
                 'id' => 1002,
                 'formId' => $form['id'],
                 'label' => 'Campaign',
-                'cssClass' => 'js-rt-campaign',
+                'cssClass' => 'js-refetrfo-campaign',
                 'inputName' => $prefix . 'campaign'
             ));
             $form['fields'][] = $campaign_field;
@@ -129,7 +129,7 @@ class RT_Integration_Gravity {
                 'id' => 1003,
                 'formId' => $form['id'],
                 'label' => 'Referrer',
-                'cssClass' => 'js-rt-referrer',
+                'cssClass' => 'js-refetrfo-referrer',
                 'inputName' => $prefix . 'referrer'
             ));
             $form['fields'][] = $referrer_field;
@@ -191,7 +191,8 @@ class RT_Integration_Gravity {
         // Debug functionality removed for production
 
         // PRIORIDAD 1: UTM en URL
-        // Note: UTM parameters are public tracking parameters, not sensitive form data
+        // Note: UTM parameters are public tracking parameters used for analytics, not sensitive form data.
+        // No nonce verification is needed as these are read-only GET parameters for tracking purposes.
         if (isset($_GET['utm_source']) && !empty($_GET['utm_source'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             $source = sanitize_text_field(wp_unslash($_GET['utm_source'])); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         }
@@ -206,17 +207,17 @@ class RT_Integration_Gravity {
         }
 
         // PRIORIDAD 2: Cookies
-        if (empty($source) && isset($_COOKIE['rt_source'])) {
-            $source = sanitize_text_field(wp_unslash($_COOKIE['rt_source']));
+        if (empty($source) && isset($_COOKIE['refetrfo_source'])) {
+            $source = sanitize_text_field(wp_unslash($_COOKIE['refetrfo_source']));
         }
-        if (empty($medium) && isset($_COOKIE['rt_medium'])) {
-            $medium = sanitize_text_field(wp_unslash($_COOKIE['rt_medium']));
+        if (empty($medium) && isset($_COOKIE['refetrfo_medium'])) {
+            $medium = sanitize_text_field(wp_unslash($_COOKIE['refetrfo_medium']));
         }
-        if (empty($campaign) && isset($_COOKIE['rt_campaign'])) {
-            $campaign = sanitize_text_field(wp_unslash($_COOKIE['rt_campaign']));
+        if (empty($campaign) && isset($_COOKIE['refetrfo_campaign'])) {
+            $campaign = sanitize_text_field(wp_unslash($_COOKIE['refetrfo_campaign']));
         }
-        if (empty($referrer) && isset($_COOKIE['rt_referrer'])) {
-            $referrer = esc_url_raw(wp_unslash($_COOKIE['rt_referrer']));
+        if (empty($referrer) && isset($_COOKIE['refetrfo_referrer'])) {
+            $referrer = esc_url_raw(wp_unslash($_COOKIE['refetrfo_referrer']));
         }
 
         // Defaults

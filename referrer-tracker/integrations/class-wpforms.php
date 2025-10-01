@@ -10,11 +10,11 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Class RT_Integration_WPForms
+ * Class Refetrfo_Integration_WPForms
  * 
  * Handles integration with WPForms
  */
-class RT_Integration_WPForms {
+class Refetrfo_Integration_WPForms {
     /**
      * Field prefix for the tracking fields
      *
@@ -32,8 +32,8 @@ class RT_Integration_WPForms {
         }
         
         // Get settings
-        $options = get_option('rt_settings');
-        $this->field_prefix = isset($options['rt_field_prefix']) ? $options['rt_field_prefix'] : 'rt_';
+        $options = get_option('refetrfo_settings');
+        $this->field_prefix = isset($options['refetrfo_field_prefix']) ? $options['refetrfo_field_prefix'] : 'refetrfo_';
 
         // Siempre añadir los filtros si WPForms está seleccionado
         add_filter('wpforms_field_properties', array($this, 'add_hidden_fields_wpforms'), 10, 3);
@@ -69,7 +69,8 @@ class RT_Integration_WPForms {
         $referrer = isset($_SERVER['HTTP_REFERER']) ? esc_url_raw(wp_unslash($_SERVER['HTTP_REFERER'])) : '';
         
         // PRIORITY 1: Check for UTM parameters first
-        // Note: UTM parameters are public tracking parameters, not sensitive form data
+        // Note: UTM parameters are public tracking parameters used for analytics, not sensitive form data.
+        // No nonce verification is needed as these are read-only GET parameters for tracking purposes.
         if (isset($_GET['utm_source']) && !empty($_GET['utm_source'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             $source = sanitize_text_field(wp_unslash($_GET['utm_source'])); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         }
@@ -86,21 +87,21 @@ class RT_Integration_WPForms {
         }
         
         // PRIORITY 2: If no UTM parameters, check cookies
-        if (empty($source) && isset($_COOKIE['rt_source'])) {
-            $source = sanitize_text_field(wp_unslash($_COOKIE['rt_source']));
+        if (empty($source) && isset($_COOKIE['refetrfo_source'])) {
+            $source = sanitize_text_field(wp_unslash($_COOKIE['refetrfo_source']));
         }
         
-        if (empty($medium) && isset($_COOKIE['rt_medium'])) {
-            $medium = sanitize_text_field(wp_unslash($_COOKIE['rt_medium']));
+        if (empty($medium) && isset($_COOKIE['refetrfo_medium'])) {
+            $medium = sanitize_text_field(wp_unslash($_COOKIE['refetrfo_medium']));
         }
         
-        if (empty($campaign) && isset($_COOKIE['rt_campaign'])) {
-            $campaign = sanitize_text_field(wp_unslash($_COOKIE['rt_campaign']));
+        if (empty($campaign) && isset($_COOKIE['refetrfo_campaign'])) {
+            $campaign = sanitize_text_field(wp_unslash($_COOKIE['refetrfo_campaign']));
         }
         
         // Si no hay referrer actual, usar el valor de la cookie
-        if (empty($referrer) && isset($_COOKIE['rt_referrer'])) {
-            $referrer = esc_url_raw(wp_unslash($_COOKIE['rt_referrer']));
+        if (empty($referrer) && isset($_COOKIE['refetrfo_referrer'])) {
+            $referrer = esc_url_raw(wp_unslash($_COOKIE['refetrfo_referrer']));
         }
         
         // PRIORITY 3: Set default values if still empty
@@ -174,28 +175,28 @@ class RT_Integration_WPForms {
             $properties['container']['class'][] = 'wpforms-field-hidden';
             
             if ($is_source) {
-                $properties['container']['class'][] = 'js-rt-source';
-                $properties['inputs']['primary']['class'][] = 'js-rt-source';
+                $properties['container']['class'][] = 'js-refetrfo-source';
+                $properties['inputs']['primary']['class'][] = 'js-refetrfo-source';
                 $properties['inputs']['primary']['attr']['data-field-type'] = 'source';
                 $properties['inputs']['primary']['value'] = $source;
             } 
             else if ($is_medium) {
-                $properties['container']['class'][] = 'js-rt-medium';
-                $properties['inputs']['primary']['class'][] = 'js-rt-medium';
+                $properties['container']['class'][] = 'js-refetrfo-medium';
+                $properties['inputs']['primary']['class'][] = 'js-refetrfo-medium';
                 $properties['inputs']['primary']['attr']['data-field-type'] = 'medium';
                 $properties['inputs']['primary']['value'] = $medium;
                 $properties['inputs']['primary']['attr']['data-field-id'] = $field_id;
                 
             }
             else if ($is_campaign) {
-                $properties['container']['class'][] = 'js-rt-campaign';
-                $properties['inputs']['primary']['class'][] = 'js-rt-campaign';
+                $properties['container']['class'][] = 'js-refetrfo-campaign';
+                $properties['inputs']['primary']['class'][] = 'js-refetrfo-campaign';
                 $properties['inputs']['primary']['attr']['data-field-type'] = 'campaign';
                 $properties['inputs']['primary']['attr']['data-field-id'] = $field_id;
             }
             else if ($is_referrer) {
-                $properties['container']['class'][] = 'js-rt-referrer';
-                $properties['inputs']['primary']['class'][] = 'js-rt-referrer';
+                $properties['container']['class'][] = 'js-refetrfo-referrer';
+                $properties['inputs']['primary']['class'][] = 'js-refetrfo-referrer';
                 $properties['inputs']['primary']['value'] = esc_url_raw($referrer);
                 $properties['inputs']['primary']['attr']['data-field-id'] = $field_id;
             }

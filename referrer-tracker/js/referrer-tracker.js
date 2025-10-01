@@ -24,16 +24,16 @@ function getCookie(name) {
     return '';
 }
 
-// Get tracking value (try URL parameter first, then cookie, then rtValues)
+// Get tracking value (try URL parameter first, then cookie, then refetrfoValues)
 function getTrackingValue(type) {
     // Check debug mode
-    var debug = (typeof rtValues !== 'undefined' && rtValues.debug === 'yes');
+    var debug = (typeof refetrfoValues !== 'undefined' && refetrfoValues.debug === 'yes');
     
     // PRIORITY 1: Try URL parameter first (for UTM parameters)
     if (type === 'campaign' || type === 'source' || type === 'medium') {
         var paramValue = getUrlParameter('utm_' + type);
         if (paramValue) {
-            if (debug) console.log('RT Debug: Found URL parameter for utm_' + type + ': ' + paramValue);
+            if (debug) console.log('Refetrfo Debug: Found URL parameter for utm_' + type + ': ' + paramValue);
             return paramValue;
         }
         
@@ -41,23 +41,23 @@ function getTrackingValue(type) {
         if (type === 'medium') {
             var typoParamValue = getUrlParameter('urm_' + type);
             if (typoParamValue) {
-                if (debug) console.log('RT Debug: Found URL parameter for urm_' + type + ' (typo correction): ' + typoParamValue);
+                if (debug) console.log('Refetrfo Debug: Found URL parameter for urm_' + type + ' (typo correction): ' + typoParamValue);
                 return typoParamValue;
             }
         }
     }
     
     // PRIORITY 2: Try cookie
-    var cookieValue = getCookie('rt_' + type);
+    var cookieValue = getCookie('refetrfo_' + type);
     if (cookieValue) {
-        if (debug) console.log('RT Debug: Found cookie value for ' + type + ': ' + cookieValue);
+        if (debug) console.log('Refetrfo Debug: Found cookie value for ' + type + ': ' + cookieValue);
         return cookieValue;
     }
     
-    // PRIORITY 3: Try rtValues from PHP
-    if (typeof rtValues !== 'undefined' && rtValues[type]) {
-        if (debug) console.log('RT Debug: Using rtValues for ' + type + ': ' + rtValues[type]);
-        return rtValues[type];
+    // PRIORITY 3: Try refetrfoValues from PHP
+    if (typeof refetrfoValues !== 'undefined' && refetrfoValues[type]) {
+        if (debug) console.log('Refetrfo Debug: Using refetrfoValues for ' + type + ': ' + refetrfoValues[type]);
+        return refetrfoValues[type];
     }
     
     // Default values if nothing else is found
@@ -71,11 +71,11 @@ function getTrackingValue(type) {
 // Update WPForms fields
 function updateWPFormsFields() {
     // Check debug mode
-    var debug = (typeof rtValues !== 'undefined' && rtValues.debug === 'yes');
+    var debug = (typeof refetrfoValues !== 'undefined' && refetrfoValues.debug === 'yes');
     
     if (debug) {
-        console.log('RT Debug: Updating WPForms fields');
-        console.log('RT Debug: Current cookies:', document.cookie);
+        console.log('Refetrfo Debug: Updating WPForms fields');
+        console.log('Refetrfo Debug: Current cookies:', document.cookie);
     }
     
     // Get tracking values - prioritize URL parameters
@@ -85,7 +85,7 @@ function updateWPFormsFields() {
     var referrer = getTrackingValue('referrer');
     
     if (debug) {
-        console.log('RT Debug: Tracking values to set:');
+        console.log('Refetrfo Debug: Tracking values to set:');
         console.log('- source:', source);
         console.log('- medium:', medium);
         console.log('- campaign:', campaign);
@@ -93,24 +93,24 @@ function updateWPFormsFields() {
     }
     
     // Find WPForms fields by class
-    jQuery('.js-rt-source').each(function() {
+    jQuery('.js-refetrfo-source').each(function() {
         jQuery(this).val(source);
-        if (debug) console.log('RT Debug: Set source field by class to:', source);
+        if (debug) console.log('Refetrfo Debug: Set source field by class to:', source);
     });
     
-    jQuery('.js-rt-medium').each(function() {
+    jQuery('.js-refetrfo-medium').each(function() {
         jQuery(this).val(medium);
-        if (debug) console.log('RT Debug: Set medium field by class to:', medium);
+        if (debug) console.log('Refetrfo Debug: Set medium field by class to:', medium);
     });
     
-    jQuery('.js-rt-campaign').each(function() {
+    jQuery('.js-refetrfo-campaign').each(function() {
         jQuery(this).val(campaign);
-        if (debug) console.log('RT Debug: Set campaign field by class to:', campaign);
+        if (debug) console.log('Refetrfo Debug: Set campaign field by class to:', campaign);
     });
     
-    jQuery('.js-rt-referrer').each(function() {
+    jQuery('.js-refetrfo-referrer').each(function() {
         jQuery(this).val(referrer);
-        if (debug) console.log('RT Debug: Set referrer field by class to:', referrer);
+        if (debug) console.log('Refetrfo Debug: Set referrer field by class to:', referrer);
     });
     
     // Find WPForms fields by container
@@ -121,27 +121,27 @@ function updateWPFormsFields() {
         var inputName = $field.find('input').attr('name');
         
         if (debug) {
-            console.log('RT Debug: Checking field:', fieldId, 'Input ID:', inputId, 'Input name:', inputName);
+            console.log('Refetrfo Debug: Checking field:', fieldId, 'Input ID:', inputId, 'Input name:', inputName);
         }
         
         // Check for specific field IDs (8, 9, 10, 11)
         var fieldIdNumber = fieldId ? fieldId.replace('wpforms-field-', '') : '';
         if (['8', '9', '10', '11'].includes(fieldIdNumber)) {
-            if (debug) console.log('RT Debug: Found field by ID:', fieldIdNumber);
+            if (debug) console.log('Refetrfo Debug: Found field by ID:', fieldIdNumber);
             
             // Field 8 = source, 9 = medium, 10 = campaign, 11 = referrer
             if (fieldIdNumber === '8' && source) {
                 $field.find('input').val(source);
-                if (debug) console.log('RT Debug: Set source field (ID 8) to:', source);
+                if (debug) console.log('Refetrfo Debug: Set source field (ID 8) to:', source);
             } else if (fieldIdNumber === '9' && medium) {
                 $field.find('input').val(medium);
-                if (debug) console.log('RT Debug: Set medium field (ID 9) to:', medium);
+                if (debug) console.log('Refetrfo Debug: Set medium field (ID 9) to:', medium);
             } else if (fieldIdNumber === '10' && campaign) {
                 $field.find('input').val(campaign);
-                if (debug) console.log('RT Debug: Set campaign field (ID 10) to:', campaign);
+                if (debug) console.log('Refetrfo Debug: Set campaign field (ID 10) to:', campaign);
             } else if (fieldIdNumber === '11' && referrer) {
                 $field.find('input').val(referrer);
-                if (debug) console.log('RT Debug: Set referrer field (ID 11) to:', referrer);
+                if (debug) console.log('Refetrfo Debug: Set referrer field (ID 11) to:', referrer);
             }
         }
         
@@ -149,16 +149,16 @@ function updateWPFormsFields() {
         if (inputName) {
             if (inputName.indexOf('source') !== -1 && source) {
                 $field.find('input').val(source);
-                if (debug) console.log('RT Debug: Set source field by name to:', source);
+                if (debug) console.log('Refetrfo Debug: Set source field by name to:', source);
             } else if (inputName.indexOf('medium') !== -1 && medium) {
                 $field.find('input').val(medium);
-                if (debug) console.log('RT Debug: Set medium field by name to:', medium);
+                if (debug) console.log('Refetrfo Debug: Set medium field by name to:', medium);
             } else if (inputName.indexOf('campaign') !== -1 && campaign) {
                 $field.find('input').val(campaign);
-                if (debug) console.log('RT Debug: Set campaign field by name to:', campaign);
+                if (debug) console.log('Refetrfo Debug: Set campaign field by name to:', campaign);
             } else if (inputName.indexOf('referrer') !== -1 && referrer) {
                 $field.find('input').val(referrer);
-                if (debug) console.log('RT Debug: Set referrer field by name to:', referrer);
+                if (debug) console.log('Refetrfo Debug: Set referrer field by name to:', referrer);
             }
         }
     });
@@ -167,12 +167,12 @@ function updateWPFormsFields() {
 // Document ready function
 jQuery(document).ready(function($) {
     // Check debug mode
-    var debug = (typeof rtValues !== 'undefined' && rtValues.debug === 'yes');
+    var debug = (typeof refetrfoValues !== 'undefined' && refetrfoValues.debug === 'yes');
     
     if (debug) {
-        console.log('RT Debug: Document ready');
-        console.log('RT Debug: rtValues:', rtValues);
-        console.log('RT Debug: URL parameters:');
+        console.log('Refetrfo Debug: Document ready');
+        console.log('Refetrfo Debug: refetrfoValues:', refetrfoValues);
+        console.log('Refetrfo Debug: URL parameters:');
         console.log('- utm_source:', getUrlParameter('utm_source'));
         console.log('- utm_medium:', getUrlParameter('utm_medium'));
         console.log('- utm_campaign:', getUrlParameter('utm_campaign'));
@@ -184,7 +184,7 @@ jQuery(document).ready(function($) {
     // Update fields again after a short delay (for dynamically loaded forms)
     setTimeout(function() {
         updateWPFormsFields();
-        if (debug) console.log('RT Debug: Fields updated after 500ms');
+        if (debug) console.log('Refetrfo Debug: Fields updated after 500ms');
     }, 500);
     
     // Update fields periodically for 10 seconds
@@ -192,12 +192,12 @@ jQuery(document).ready(function($) {
     var updateInterval = setInterval(function() {
         updateWPFormsFields();
         updateCount++;
-        if (debug) console.log('RT Debug: Fields updated in interval', updateCount);
+        if (debug) console.log('Refetrfo Debug: Fields updated in interval', updateCount);
         
         // Stop after 10 seconds (20 updates at 500ms interval)
         if (updateCount >= 20) {
             clearInterval(updateInterval);
-            if (debug) console.log('RT Debug: Stopped periodic updates after 10 seconds');
+            if (debug) console.log('Refetrfo Debug: Stopped periodic updates after 10 seconds');
             
             // Final check for empty fields
             setTimeout(function() {
@@ -213,19 +213,19 @@ jQuery(document).ready(function($) {
                             var directValue = getUrlParameter('utm_source');
                             if (directValue) {
                                 $input.val(directValue);
-                                if (debug) console.log('RT Debug: Final update - Set source field to URL param:', directValue);
+                                if (debug) console.log('Refetrfo Debug: Final update - Set source field to URL param:', directValue);
                             }
                         } else if (fieldIdNumber === '9') {
                             var directValue = getUrlParameter('utm_medium');
                             if (directValue) {
                                 $input.val(directValue);
-                                if (debug) console.log('RT Debug: Final update - Set medium field to URL param:', directValue);
+                                if (debug) console.log('Refetrfo Debug: Final update - Set medium field to URL param:', directValue);
                             }
                         } else if (fieldIdNumber === '10') {
                             var directValue = getUrlParameter('utm_campaign');
                             if (directValue) {
                                 $input.val(directValue);
-                                if (debug) console.log('RT Debug: Final update - Set campaign field to URL param:', directValue);
+                                if (debug) console.log('Refetrfo Debug: Final update - Set campaign field to URL param:', directValue);
                             }
                         }
                     }
@@ -236,13 +236,13 @@ jQuery(document).ready(function($) {
     
     // Also update fields when WPForms is initialized
     $(document).on('wpformsReady', function() {
-        if (debug) console.log('RT Debug: WPForms ready event triggered');
+        if (debug) console.log('Refetrfo Debug: WPForms ready event triggered');
         updateWPFormsFields();
     });
     
     // Update fields when form is submitted
     $(document).on('wpformsBeforeSubmit', function() {
-        if (debug) console.log('RT Debug: WPForms before submit event triggered');
+        if (debug) console.log('Refetrfo Debug: WPForms before submit event triggered');
         updateWPFormsFields();
     });
 });

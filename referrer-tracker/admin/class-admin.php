@@ -10,11 +10,11 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Class RT_Admin
+ * Class Refetrfo_Admin
  * 
  * Handles all admin-related functionality for the Referrer Tracker plugin
  */
-class RT_Admin {
+class Refetrfo_Admin {
     /**
      * Constructor
      */
@@ -53,15 +53,15 @@ class RT_Admin {
 
             <form action="options.php" method="post">
                 <?php
-                settings_fields('rt_referrer_tracker');
-                do_settings_sections('rt_referrer_tracker');
+                settings_fields('refetrfo_referrer_tracker');
+                do_settings_sections('refetrfo_referrer_tracker');
                 submit_button();
                 ?>
             </form>
 
             <?php
-            $options = get_option('rt_settings');
-            $this->display_implementation_instructions($options['rt_form_plugin']);
+            $options = get_option('refetrfo_settings');
+            $this->display_implementation_instructions($options['refetrfo_form_plugin']);
             ?>
         </div>
         <?php
@@ -80,14 +80,14 @@ class RT_Admin {
                 <h3>Contact Form 7 Implementation</h3>
                 <p>Add these hidden fields to your Contact Form 7 form:</p>
                 <pre style="background: #f5f5f5; padding: 10px; overflow: auto;">
-[hidden rt_source class:js-rt-source ""]
-[hidden rt_medium class:js-rt-medium ""]
-[hidden rt_campaign class:js-rt-campaign ""]
-[hidden rt_referrer class:js-rt-referrer ""]</pre>
+[hidden refetrfo_source class:js-refetrfo-source ""]
+[hidden refetrfo_medium class:js-refetrfo-medium ""]
+[hidden refetrfo_campaign class:js-refetrfo-campaign ""]
+[hidden refetrfo_referrer class:js-refetrfo-referrer ""]</pre>
                 <p><strong>Important notes:</strong></p>
                 <ul style="list-style-type: disc; margin-left: 20px;">
-                    <li>The field names must use underscore (e.g., <code>rt_source</code>)</li>
-                    <li>The classes must use hyphen (e.g., <code>js-rt-source</code>)</li>
+                    <li>The field names must use underscore (e.g., <code>refetrfo_source</code>)</li>
+                    <li>The classes must use hyphen (e.g., <code>js-refetrfo-source</code>)</li>
                     <li>Leave the default value empty (<code>""</code>)</li>
                     <li>Do not add any additional classes or attributes</li>
                 </ul>
@@ -115,34 +115,34 @@ class RT_Admin {
                     <tbody>
                         <tr>
                             <td>Source</td>
-                            <td>rt_source</td>
+                            <td>refetrfo_source</td>
                             <td><em>Leave empty</em></td>
-                            <td>js-rt-source</td>
+                            <td>js-refetrfo-source</td>
                         </tr>
                         <tr>
                             <td>Medium</td>
-                            <td>rt_medium</td>
+                            <td>refetrfo_medium</td>
                             <td><em>Leave empty</em></td>
-                            <td>js-rt-medium</td>
+                            <td>js-refetrfo-medium</td>
                         </tr>
                         <tr>
                             <td>Campaign</td>
-                            <td>rt_campaign</td>
+                            <td>refetrfo_campaign</td>
                             <td><em>Leave empty</em></td>
-                            <td>js-rt-campaign</td>
+                            <td>js-refetrfo-campaign</td>
                         </tr>
                         <tr>
                             <td>Referrer</td>
-                            <td>rt_referrer</td>
+                            <td>refetrfo_referrer</td>
                             <td><em>Leave empty</em></td>
-                            <td>js-rt-referrer</td>
+                            <td>js-refetrfo-referrer</td>
                         </tr>
                     </tbody>
                 </table>
                 <p><strong>Important notes:</strong></p>
                 <ul style="list-style-type: disc; margin-left: 20px;">
-                    <li>Make sure to set the <strong>Field Name</strong> exactly as shown above (e.g., <code>rt_source</code>)</li>
-                    <li>Add the <strong>CSS Classes</strong> exactly as shown above (e.g., <code>js-rt-source</code>)</li>
+                    <li>Make sure to set the <strong>Field Name</strong> exactly as shown above (e.g., <code>refetrfo_source</code>)</li>
+                    <li>Add the <strong>CSS Classes</strong> exactly as shown above (e.g., <code>js-refetrfo-source</code>)</li>
                     <li>Leave the <strong>Default Value</strong> empty - the plugin will populate it automatically</li>
                     <li>If you have enabled "Auto Fields" in the settings, the plugin will automatically handle these fields for you</li>
                 </ul>
@@ -169,23 +169,23 @@ class RT_Admin {
                     <tbody>
                         <tr>
                             <td>Source</td>
-                            <td>rt_source</td>
-                            <td>js-rt-source</td>
+                            <td>refetrfo_source</td>
+                            <td>js-refetrfo-source</td>
                         </tr>
                         <tr>
                             <td>Medium</td>
-                            <td>rt_medium</td>
-                            <td>js-rt-medium</td>
+                            <td>refetrfo_medium</td>
+                            <td>js-refetrfo-medium</td>
                         </tr>
                         <tr>
                             <td>Campaign</td>
-                            <td>rt_campaign</td>
-                            <td>js-rt-campaign</td>
+                            <td>refetrfo_campaign</td>
+                            <td>js-refetrfo-campaign</td>
                         </tr>
                         <tr>
                             <td>Referrer</td>
-                            <td>rt_referrer</td>
-                            <td>js-rt-referrer</td>
+                            <td>refetrfo_referrer</td>
+                            <td>js-refetrfo-referrer</td>
                         </tr>
                     </tbody>
                 </table>
@@ -198,14 +198,14 @@ class RT_Admin {
                 <h3>Generic HTML Forms Implementation</h3>
                 <p>Add these hidden fields to your HTML form:</p>
                 <pre style="background: #f5f5f5; padding: 10px; overflow: auto;">
-&lt;input type="hidden" name="rt_source" class="js-rt-source" value=""&gt;
-&lt;input type="hidden" name="rt_medium" class="js-rt-medium" value=""&gt;
-&lt;input type="hidden" name="rt_campaign" class="js-rt-campaign" value=""&gt;
-&lt;input type="hidden" name="rt_referrer" class="js-rt-referrer" value=""&gt;</pre>
+&lt;input type="hidden" name="refetrfo_source" class="js-refetrfo-source" value=""&gt;
+&lt;input type="hidden" name="refetrfo_medium" class="js-refetrfo-medium" value=""&gt;
+&lt;input type="hidden" name="refetrfo_campaign" class="js-refetrfo-campaign" value=""&gt;
+&lt;input type="hidden" name="refetrfo_referrer" class="js-refetrfo-referrer" value=""&gt;</pre>
                 <p><strong>Important notes:</strong></p>
                 <ul style="list-style-type: disc; margin-left: 20px;">
-                    <li>The name attributes must use underscore (e.g., <code>rt_source</code>)</li>
-                    <li>The class attributes must use hyphen (e.g., <code>js-rt-source</code>)</li>
+                    <li>The name attributes must use underscore (e.g., <code>refetrfo_source</code>)</li>
+                    <li>The class attributes must use hyphen (e.g., <code>js-refetrfo-source</code>)</li>
                     <li>Leave the value attribute empty (<code>value=""</code>)</li>
                 </ul>
                 <?php
@@ -226,52 +226,52 @@ class RT_Admin {
      */
     public function register_settings() {
         register_setting(
-            'rt_referrer_tracker',
-            'rt_settings',
+            'refetrfo_referrer_tracker',
+            'refetrfo_settings',
             array(
                 'type' => 'array',
                 'default' => array(
-                    'rt_form_plugin' => 'cf7',
-                    'rt_field_prefix' => 'rt_',
-                    'rt_auto_fields' => false
+                    'refetrfo_form_plugin' => 'cf7',
+                    'refetrfo_field_prefix' => 'refetrfo_',
+                    'refetrfo_auto_fields' => false
                 ),
                 'sanitize_callback' => array($this, 'sanitize_settings')
             )
         );
 
         add_settings_section(
-            'rt_referrer_tracker_section',
-            __('General Settings', 'referrer-tracker'),
+            'refetrfo_referrer_tracker_section',
+            __('General Settings', 'referrer-tracker-for-forms'),
             array($this, 'section_text'),
-            'rt_referrer_tracker'
+            'refetrfo_referrer_tracker'
         );
 
         add_settings_field(
-            'rt_form_plugin',
-            __('Form Plugin', 'referrer-tracker'),
+            'refetrfo_form_plugin',
+            __('Form Plugin', 'referrer-tracker-for-forms'),
             array($this, 'form_plugin_field'),
-            'rt_referrer_tracker',
-            'rt_referrer_tracker_section'
+            'refetrfo_referrer_tracker',
+            'refetrfo_referrer_tracker_section'
         );
 
         add_settings_field(
-            'rt_field_prefix',
-            __('Field Prefix', 'referrer-tracker'),
+            'refetrfo_field_prefix',
+            __('Field Prefix', 'referrer-tracker-for-forms'),
             array($this, 'field_prefix_field'),
-            'rt_referrer_tracker',
-            'rt_referrer_tracker_section'
+            'refetrfo_referrer_tracker',
+            'refetrfo_referrer_tracker_section'
         );
 
         // Solo mostrar la opción de auto fields para Gravity Forms y Generic HTML Forms
-        $options = get_option('rt_settings');
-        $form_plugin = isset($options['rt_form_plugin']) ? $options['rt_form_plugin'] : 'cf7';
+        $options = get_option('refetrfo_settings');
+        $form_plugin = isset($options['refetrfo_form_plugin']) ? $options['refetrfo_form_plugin'] : 'cf7';
         if ($form_plugin === 'gravity' || $form_plugin === 'generic') {
             add_settings_field(
-                'rt_auto_fields',
-                __('Auto Fields', 'referrer-tracker'),
+                'refetrfo_auto_fields',
+                __('Auto Fields', 'referrer-tracker-for-forms'),
                 array($this, 'auto_fields_field'),
-                'rt_referrer_tracker',
-                'rt_referrer_tracker_section'
+                'refetrfo_referrer_tracker',
+                'refetrfo_referrer_tracker_section'
             );
         }
     }
@@ -283,17 +283,17 @@ class RT_Admin {
         $sanitized = array();
         
         // Form Plugin
-        if (isset($input['rt_form_plugin'])) {
-            $sanitized['rt_form_plugin'] = sanitize_text_field($input['rt_form_plugin']);
+        if (isset($input['refetrfo_form_plugin'])) {
+            $sanitized['refetrfo_form_plugin'] = sanitize_text_field($input['refetrfo_form_plugin']);
         }
         
         // Field Prefix
-        if (isset($input['rt_field_prefix'])) {
-            $sanitized['rt_field_prefix'] = sanitize_text_field($input['rt_field_prefix']);
+        if (isset($input['refetrfo_field_prefix'])) {
+            $sanitized['refetrfo_field_prefix'] = sanitize_text_field($input['refetrfo_field_prefix']);
         }
         
         // Auto Fields
-        $sanitized['rt_auto_fields'] = isset($input['rt_auto_fields']) ? true : false;
+        $sanitized['refetrfo_auto_fields'] = isset($input['refetrfo_auto_fields']) ? true : false;
         
         return $sanitized;
     }
@@ -309,10 +309,10 @@ class RT_Admin {
      * Form plugin field
      */
     public function form_plugin_field() {
-        $options = get_option('rt_settings');
-        $current = isset($options['rt_form_plugin']) ? $options['rt_form_plugin'] : 'cf7';
+        $options = get_option('refetrfo_settings');
+        $current = isset($options['refetrfo_form_plugin']) ? $options['refetrfo_form_plugin'] : 'cf7';
         ?>
-        <select name="rt_settings[rt_form_plugin]">
+        <select name="refetrfo_settings[refetrfo_form_plugin]">
             <option value="cf7" <?php selected($current, 'cf7'); ?>>Contact Form 7</option>
             <option value="wpforms" <?php selected($current, 'wpforms'); ?>>WPForms</option>
             <option value="gravity" <?php selected($current, 'gravity'); ?>>Gravity Forms</option>
@@ -325,11 +325,11 @@ class RT_Admin {
      * Field prefix field
      */
     public function field_prefix_field() {
-        $options = get_option('rt_settings');
-        $current = isset($options['rt_field_prefix']) ? $options['rt_field_prefix'] : 'rt_';
+        $options = get_option('refetrfo_settings');
+        $current = isset($options['refetrfo_field_prefix']) ? $options['refetrfo_field_prefix'] : 'refetrfo_';
         ?>
-        <input type="text" name="rt_settings[rt_field_prefix]" value="<?php echo esc_attr($current); ?>" />
-        <p class="description">Prefix for the hidden fields (e.g., rt_)</p>
+        <input type="text" name="refetrfo_settings[refetrfo_field_prefix]" value="<?php echo esc_attr($current); ?>" />
+        <p class="description">Prefix for the hidden fields (e.g., refetrfo_)</p>
         <?php
     }
 
@@ -337,9 +337,9 @@ class RT_Admin {
      * Auto fields field
      */
     public function auto_fields_field() {
-        $options = get_option('rt_settings');
-        $checked = isset($options['rt_auto_fields']) ? $options['rt_auto_fields'] : false;
-        $form_plugin = isset($options['rt_form_plugin']) ? $options['rt_form_plugin'] : 'cf7';
+        $options = get_option('refetrfo_settings');
+        $checked = isset($options['refetrfo_auto_fields']) ? $options['refetrfo_auto_fields'] : false;
+        $form_plugin = isset($options['refetrfo_form_plugin']) ? $options['refetrfo_form_plugin'] : 'cf7';
         
         // Determinar el texto según el plugin de formulario seleccionado
         $plugin_text = 'forms';
@@ -358,7 +358,7 @@ class RT_Admin {
                 break;
         }
         ?>
-        <input type="checkbox" name="rt_settings[rt_auto_fields]" value="1" <?php checked($checked, true); ?> />
+        <input type="checkbox" name="refetrfo_settings[refetrfo_auto_fields]" value="1" <?php checked($checked, true); ?> />
         <p class="description">Automatically insert hidden fields into <?php echo esc_html($plugin_text); ?></p>
         <?php
     }

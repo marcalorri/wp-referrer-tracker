@@ -10,11 +10,11 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Class RT_Integration_CF7
+ * Class Refetrfo_Integration_CF7
  * 
  * Handles integration with Contact Form 7
  */
-class RT_Integration_CF7 {
+class Refetrfo_Integration_CF7 {
     /**
      * Field prefix for the tracking fields
      *
@@ -27,11 +27,11 @@ class RT_Integration_CF7 {
      */
     public function __construct() {
         // Get settings
-        $options = get_option('rt_settings');
-        $this->field_prefix = isset($options['rt_field_prefix']) ? $options['rt_field_prefix'] : 'rt_';
+        $options = get_option('refetrfo_settings');
+        $this->field_prefix = isset($options['refetrfo_field_prefix']) ? $options['refetrfo_field_prefix'] : 'refetrfo_';
 
         // Si está activada la inserción automática de campos
-        if (isset($options['rt_auto_fields']) && $options['rt_auto_fields']) {
+        if (isset($options['refetrfo_auto_fields']) && $options['refetrfo_auto_fields']) {
             add_filter('wpcf7_form_elements', array($this, 'add_hidden_fields_cf7'));
         }
     }
@@ -47,10 +47,10 @@ class RT_Integration_CF7 {
         $tracking = $this->get_tracking_values();
 
         $hidden_fields = "
-[hidden {$prefix}source class:js-rt-source \"\" default:\"{$tracking['source']}\"]
-[hidden {$prefix}medium class:js-rt-medium \"\" default:\"{$tracking['medium']}\"]
-[hidden {$prefix}campaign class:js-rt-campaign \"\" default:\"{$tracking['campaign']}\"]
-[hidden {$prefix}referrer class:js-rt-referrer \"\" default:\"{$tracking['referrer']}\"]
+[hidden {$prefix}source class:js-refetrfo-source \"\" default:\"{$tracking['source']}\"]
+[hidden {$prefix}medium class:js-refetrfo-medium \"\" default:\"{$tracking['medium']}\"]
+[hidden {$prefix}campaign class:js-refetrfo-campaign \"\" default:\"{$tracking['campaign']}\"]
+[hidden {$prefix}referrer class:js-refetrfo-referrer \"\" default:\"{$tracking['referrer']}\"]
 ";
         return $elements . $hidden_fields;
     }
@@ -71,7 +71,8 @@ class RT_Integration_CF7 {
         // Debug functionality removed for production
 
         // PRIORIDAD 1: UTM en URL
-        // Note: UTM parameters are public tracking parameters, not sensitive form data
+        // Note: UTM parameters are public tracking parameters used for analytics, not sensitive form data.
+        // No nonce verification is needed as these are read-only GET parameters for tracking purposes.
         if (isset($_GET['utm_source']) && !empty($_GET['utm_source'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             $source = sanitize_text_field(wp_unslash($_GET['utm_source'])); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         }
@@ -86,17 +87,17 @@ class RT_Integration_CF7 {
         }
 
         // PRIORIDAD 2: Cookies
-        if (empty($source) && isset($_COOKIE['rt_source'])) {
-            $source = sanitize_text_field(wp_unslash($_COOKIE['rt_source']));
+        if (empty($source) && isset($_COOKIE['refetrfo_source'])) {
+            $source = sanitize_text_field(wp_unslash($_COOKIE['refetrfo_source']));
         }
-        if (empty($medium) && isset($_COOKIE['rt_medium'])) {
-            $medium = sanitize_text_field(wp_unslash($_COOKIE['rt_medium']));
+        if (empty($medium) && isset($_COOKIE['refetrfo_medium'])) {
+            $medium = sanitize_text_field(wp_unslash($_COOKIE['refetrfo_medium']));
         }
-        if (empty($campaign) && isset($_COOKIE['rt_campaign'])) {
-            $campaign = sanitize_text_field(wp_unslash($_COOKIE['rt_campaign']));
+        if (empty($campaign) && isset($_COOKIE['refetrfo_campaign'])) {
+            $campaign = sanitize_text_field(wp_unslash($_COOKIE['refetrfo_campaign']));
         }
-        if (empty($referrer) && isset($_COOKIE['rt_referrer'])) {
-            $referrer = esc_url_raw(wp_unslash($_COOKIE['rt_referrer']));
+        if (empty($referrer) && isset($_COOKIE['refetrfo_referrer'])) {
+            $referrer = esc_url_raw(wp_unslash($_COOKIE['refetrfo_referrer']));
         }
 
         // Defaults

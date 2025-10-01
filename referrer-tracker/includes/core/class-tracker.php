@@ -10,11 +10,11 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Class RT_Tracker
+ * Class Refetrfo_Tracker
  * 
  * Handles core tracking functionality for the Referrer Tracker plugin
  */
-class RT_Tracker {
+class Refetrfo_Tracker {
     /**
      * Field prefix for the tracking fields
      *
@@ -27,8 +27,8 @@ class RT_Tracker {
      */
     public function __construct() {
         // Get settings
-        $options = get_option('rt_settings');
-        $this->field_prefix = isset($options['rt_field_prefix']) ? $options['rt_field_prefix'] : 'rt_';
+        $options = get_option('refetrfo_settings');
+        $this->field_prefix = isset($options['refetrfo_field_prefix']) ? $options['refetrfo_field_prefix'] : 'refetrfo_';
 
         // Initialize tracking
         add_action('wp', array($this, 'init_tracking'));
@@ -68,8 +68,8 @@ class RT_Tracker {
         $referrer = isset($_SERVER['HTTP_REFERER']) ? esc_url_raw(wp_unslash($_SERVER['HTTP_REFERER'])) : '';
         
         // Si ya existe una cookie de referrer, no la sobreescribimos (mantenemos el referrer original)
-        if (isset($_COOKIE['rt_referrer']) && !empty($_COOKIE['rt_referrer'])) {
-            $referrer = esc_url_raw(wp_unslash($_COOKIE['rt_referrer']));
+        if (isset($_COOKIE['refetrfo_referrer']) && !empty($_COOKIE['refetrfo_referrer'])) {
+            $referrer = esc_url_raw(wp_unslash($_COOKIE['refetrfo_referrer']));
         }
         
         // Get UTM parameters if present
@@ -78,7 +78,8 @@ class RT_Tracker {
         $campaign = '';
         
         // Check for UTM parameters (priority 1)
-        // Note: UTM parameters are public tracking parameters, not sensitive form data
+        // Note: UTM parameters are public tracking parameters used for analytics, not sensitive form data.
+        // No nonce verification is needed as these are read-only GET parameters for tracking purposes.
         if (isset($_GET['utm_source']) && !empty($_GET['utm_source'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             $source = sanitize_text_field(wp_unslash($_GET['utm_source'])); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         }
@@ -137,42 +138,42 @@ class RT_Tracker {
         // Debug information removed for production
         
         // Delete any existing cookies first to prevent duplicates
-        if (isset($_COOKIE['rt_source'])) {
-            setcookie('rt_source', '', time() - 3600, $path);
-            unset($_COOKIE['rt_source']);
+        if (isset($_COOKIE['refetrfo_source'])) {
+            setcookie('refetrfo_source', '', time() - 3600, $path);
+            unset($_COOKIE['refetrfo_source']);
         }
-        if (isset($_COOKIE['rt_medium'])) {
-            setcookie('rt_medium', '', time() - 3600, $path);
-            unset($_COOKIE['rt_medium']);
+        if (isset($_COOKIE['refetrfo_medium'])) {
+            setcookie('refetrfo_medium', '', time() - 3600, $path);
+            unset($_COOKIE['refetrfo_medium']);
         }
-        if (isset($_COOKIE['rt_campaign'])) {
-            setcookie('rt_campaign', '', time() - 3600, $path);
-            unset($_COOKIE['rt_campaign']);
+        if (isset($_COOKIE['refetrfo_campaign'])) {
+            setcookie('refetrfo_campaign', '', time() - 3600, $path);
+            unset($_COOKIE['refetrfo_campaign']);
         }
         // No eliminamos la cookie de referrer si ya existe, para mantener el referrer original
-        if (!isset($_COOKIE['rt_referrer'])) {
-            if (isset($_COOKIE['rt_referrer'])) {
-                setcookie('rt_referrer', '', time() - 3600, $path);
-                unset($_COOKIE['rt_referrer']);
+        if (!isset($_COOKIE['refetrfo_referrer'])) {
+            if (isset($_COOKIE['refetrfo_referrer'])) {
+                setcookie('refetrfo_referrer', '', time() - 3600, $path);
+                unset($_COOKIE['refetrfo_referrer']);
             }
         }
         
-        // Set new cookies with rt_ prefix
-        setcookie('rt_source', $source, $expire, $path);
-        setcookie('rt_medium', $medium, $expire, $path);
-        setcookie('rt_campaign', $campaign, $expire, $path);
+        // Set new cookies with refetrfo_ prefix
+        setcookie('refetrfo_source', $source, $expire, $path);
+        setcookie('refetrfo_medium', $medium, $expire, $path);
+        setcookie('refetrfo_campaign', $campaign, $expire, $path);
         
         // Solo establecemos la cookie de referrer si no existe o si hay un nuevo referrer
         if (!empty($referrer)) {
-            setcookie('rt_referrer', $referrer, $expire, $path);
+            setcookie('refetrfo_referrer', $referrer, $expire, $path);
         }
         
         // Also set in $_COOKIE for immediate use in this request
-        $_COOKIE['rt_source'] = $source;
-        $_COOKIE['rt_medium'] = $medium;
-        $_COOKIE['rt_campaign'] = $campaign;
+        $_COOKIE['refetrfo_source'] = $source;
+        $_COOKIE['refetrfo_medium'] = $medium;
+        $_COOKIE['refetrfo_campaign'] = $campaign;
         if (!empty($referrer)) {
-            $_COOKIE['rt_referrer'] = $referrer;
+            $_COOKIE['refetrfo_referrer'] = $referrer;
         }
         
         // Debug information removed for production
@@ -233,64 +234,64 @@ class RT_Tracker {
         }
         
         // Comprobar parámetros de campaña pagada en la URL actual
-        // Note: These are public tracking parameters, not sensitive form data
-        $query_params = $_GET; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        // Note: These are public tracking parameters used for analytics, not sensitive form data.
+        // No nonce verification is needed as these are read-only GET parameters for tracking purposes.
         
         // Google Ads (gclid)
-        if (isset($query_params['gclid'])) {
+        if (isset($_GET['gclid'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             $parsed['source'] = 'google';
             $parsed['medium'] = 'cpc';
             
             // Extraer campaña de UTM si existe
-            if (isset($query_params['utm_campaign']) && !empty($query_params['utm_campaign'])) {
-                $parsed['campaign'] = sanitize_text_field($query_params['utm_campaign']);
+            if (isset($_GET['utm_campaign']) && !empty($_GET['utm_campaign'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+                $parsed['campaign'] = sanitize_text_field(wp_unslash($_GET['utm_campaign'])); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             }
             
             return $parsed;
         }
         
         // Facebook Ads (fbclid)
-        if (isset($query_params['fbclid'])) {
+        if (isset($_GET['fbclid'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             $parsed['source'] = 'facebook';
             $parsed['medium'] = 'paid-social';
             
             // Extraer campaña de UTM si existe
-            if (isset($query_params['utm_campaign']) && !empty($query_params['utm_campaign'])) {
-                $parsed['campaign'] = sanitize_text_field($query_params['utm_campaign']);
+            if (isset($_GET['utm_campaign']) && !empty($_GET['utm_campaign'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+                $parsed['campaign'] = sanitize_text_field(wp_unslash($_GET['utm_campaign'])); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             }
             
             return $parsed;
         }
         
         // Microsoft Ads (msclkid)
-        if (isset($query_params['msclkid'])) {
+        if (isset($_GET['msclkid'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             $parsed['source'] = 'bing';
             $parsed['medium'] = 'cpc';
             
             // Extraer campaña de UTM si existe
-            if (isset($query_params['utm_campaign']) && !empty($query_params['utm_campaign'])) {
-                $parsed['campaign'] = sanitize_text_field($query_params['utm_campaign']);
+            if (isset($_GET['utm_campaign']) && !empty($_GET['utm_campaign'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+                $parsed['campaign'] = sanitize_text_field(wp_unslash($_GET['utm_campaign'])); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             }
             
             return $parsed;
         }
         
         // TikTok Ads (ttclid)
-        if (isset($query_params['ttclid'])) {
+        if (isset($_GET['ttclid'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             $parsed['source'] = 'tiktok';
             $parsed['medium'] = 'paid-social';
             
             // Extraer campaña de UTM si existe
-            if (isset($query_params['utm_campaign']) && !empty($query_params['utm_campaign'])) {
-                $parsed['campaign'] = sanitize_text_field($query_params['utm_campaign']);
+            if (isset($_GET['utm_campaign']) && !empty($_GET['utm_campaign'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+                $parsed['campaign'] = sanitize_text_field(wp_unslash($_GET['utm_campaign'])); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             }
             
             return $parsed;
         }
         
         // Extraer campaña de UTM de la URL actual si existe
-        if (isset($query_params['utm_campaign']) && !empty($query_params['utm_campaign'])) {
-            $parsed['campaign'] = sanitize_text_field($query_params['utm_campaign']);
+        if (isset($_GET['utm_campaign']) && !empty($_GET['utm_campaign'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            $parsed['campaign'] = sanitize_text_field(wp_unslash($_GET['utm_campaign'])); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         }
         
         // Identificar fuentes de tráfico comunes
@@ -358,23 +359,23 @@ class RT_Tracker {
         
         // Enqueue the JavaScript file
         wp_enqueue_script(
-            'rt-referrer-tracker',
-            plugins_url('js/referrer-tracker.js', RT_PLUGIN_FILE),
+            'refetrfo-referrer-tracker',
+            plugins_url('js/referrer-tracker.js', REFETRFO_PLUGIN_FILE),
             array('jquery'),
-            RT_VERSION,
+            REFETRFO_VERSION,
             true
         );
         
         // Get tracking values from cookies
-        $source = isset($_COOKIE['rt_source']) ? sanitize_text_field(wp_unslash($_COOKIE['rt_source'])) : '';
-        $medium = isset($_COOKIE['rt_medium']) ? sanitize_text_field(wp_unslash($_COOKIE['rt_medium'])) : '';
-        $campaign = isset($_COOKIE['rt_campaign']) ? sanitize_text_field(wp_unslash($_COOKIE['rt_campaign'])) : '';
-        $referrer = isset($_COOKIE['rt_referrer']) ? esc_url_raw(wp_unslash($_COOKIE['rt_referrer'])) : '';
+        $source = isset($_COOKIE['refetrfo_source']) ? sanitize_text_field(wp_unslash($_COOKIE['refetrfo_source'])) : '';
+        $medium = isset($_COOKIE['refetrfo_medium']) ? sanitize_text_field(wp_unslash($_COOKIE['refetrfo_medium'])) : '';
+        $campaign = isset($_COOKIE['refetrfo_campaign']) ? sanitize_text_field(wp_unslash($_COOKIE['refetrfo_campaign'])) : '';
+        $referrer = isset($_COOKIE['refetrfo_referrer']) ? esc_url_raw(wp_unslash($_COOKIE['refetrfo_referrer'])) : '';
         
         // Pass values to JavaScript
         wp_localize_script(
-            'rt-referrer-tracker',
-            'rtValues',
+            'refetrfo-referrer-tracker',
+            'refetrfoValues',
             array(
                 'source' => $source,
                 'medium' => $medium,
@@ -395,17 +396,17 @@ class RT_Tracker {
 
         // Enqueue script
         wp_enqueue_script(
-            'rt-referrer-tracker',
-            plugins_url('js/referrer-tracker.js', RT_PLUGIN_FILE),
+            'refetrfo-referrer-tracker',
+            plugins_url('js/referrer-tracker.js', REFETRFO_PLUGIN_FILE),
             array('jquery'),
-            RT_VERSION,
+            REFETRFO_VERSION,
             true
         );
 
         // Localize script
         wp_localize_script(
-            'rt-referrer-tracker',
-            'rtValues',
+            'refetrfo-referrer-tracker',
+            'refetrfoValues',
             array(
                 'source' => $source,
                 'medium' => $medium,
@@ -421,10 +422,10 @@ class RT_Tracker {
      * @return string The source value
      */
     private function get_source() {
-        if (!isset($_COOKIE['rt_source'])) {
+        if (!isset($_COOKIE['refetrfo_source'])) {
             return '';
         }
-        return sanitize_text_field(wp_unslash($_COOKIE['rt_source']));
+        return sanitize_text_field(wp_unslash($_COOKIE['refetrfo_source']));
     }
 
     /**
@@ -433,10 +434,10 @@ class RT_Tracker {
      * @return string The medium value
      */
     private function get_medium() {
-        if (!isset($_COOKIE['rt_medium'])) {
+        if (!isset($_COOKIE['refetrfo_medium'])) {
             return '';
         }
-        return sanitize_text_field(wp_unslash($_COOKIE['rt_medium']));
+        return sanitize_text_field(wp_unslash($_COOKIE['refetrfo_medium']));
     }
 
     /**
@@ -445,10 +446,10 @@ class RT_Tracker {
      * @return string The campaign value
      */
     private function get_campaign() {
-        if (!isset($_COOKIE['rt_campaign'])) {
+        if (!isset($_COOKIE['refetrfo_campaign'])) {
             return '';
         }
-        return sanitize_text_field(wp_unslash($_COOKIE['rt_campaign']));
+        return sanitize_text_field(wp_unslash($_COOKIE['refetrfo_campaign']));
     }
 
     /**
@@ -457,10 +458,10 @@ class RT_Tracker {
      * @return string The referrer value
      */
     private function get_referrer() {
-        if (!isset($_COOKIE['rt_referrer'])) {
+        if (!isset($_COOKIE['refetrfo_referrer'])) {
             return '';
         }
-        return esc_url_raw(wp_unslash($_COOKIE['rt_referrer']));
+        return esc_url_raw(wp_unslash($_COOKIE['refetrfo_referrer']));
     }
 
     /**

@@ -16,7 +16,7 @@ if (!function_exists('add_action') || !function_exists('plugin_basename')) {
 }
 
 /**
- * Class RT_Referrer_Tracker
+ * Class Refetrfo_Referrer_Tracker
  * 
  * Main plugin class that initializes all components
  * 
@@ -24,53 +24,53 @@ if (!function_exists('add_action') || !function_exists('plugin_basename')) {
  * load_plugin_textdomain(), and plugin_basename() which may trigger linting errors
  * in some environments but will work correctly within WordPress.
  */
-class RT_Referrer_Tracker {
+class Refetrfo_Referrer_Tracker {
     /**
      * Plugin instance
      *
-     * @var RT_Referrer_Tracker
+     * @var Refetrfo_Referrer_Tracker
      */
     private static $instance = null;
 
     /**
      * Admin instance
      *
-     * @var RT_Admin
+     * @var Refetrfo_Admin
      */
     public $admin;
 
     /**
      * Tracker instance
      *
-     * @var RT_Tracker
+     * @var Refetrfo_Tracker
      */
     public $tracker;
 
     /**
      * CF7 integration instance
      *
-     * @var RT_Integration_CF7
+     * @var Refetrfo_Integration_CF7
      */
     public $cf7;
 
     /**
      * WPForms integration instance
      *
-     * @var RT_Integration_WPForms
+     * @var Refetrfo_Integration_WPForms
      */
     public $wpforms;
 
     /**
      * Gravity Forms integration instance
      *
-     * @var RT_Integration_Gravity
+     * @var Refetrfo_Integration_Gravity
      */
     public $gravity;
 
     /**
      * Get the plugin instance
      *
-     * @return RT_Referrer_Tracker The plugin instance
+     * @return Refetrfo_Referrer_Tracker The plugin instance
      */
     public static function get_instance() {
         if (null === self::$instance) {
@@ -106,8 +106,8 @@ class RT_Referrer_Tracker {
         require_once dirname(__FILE__, 2) . '/admin/class-admin.php';
         
         // Integration classes
-        $options = get_option('rt_settings');
-        $form_plugin = isset($options['rt_form_plugin']) ? $options['rt_form_plugin'] : 'cf7';
+        $options = get_option('refetrfo_settings');
+        $form_plugin = isset($options['refetrfo_form_plugin']) ? $options['refetrfo_form_plugin'] : 'cf7';
         
         // Load all integrations
         require_once dirname(__FILE__, 2) . '/integrations/class-cf7.php';
@@ -136,19 +136,19 @@ class RT_Referrer_Tracker {
         }
         
         // Initialize admin
-        $this->admin = new RT_Admin();
+        $this->admin = new Refetrfo_Admin();
         
         // Initialize tracker
-        $this->tracker = new RT_Tracker();
+        $this->tracker = new Refetrfo_Tracker();
         
         // Initialize integrations based on settings
-        $options = get_option('rt_settings');
-        $form_plugin = isset($options['rt_form_plugin']) ? $options['rt_form_plugin'] : 'cf7';
+        $options = get_option('refetrfo_settings');
+        $form_plugin = isset($options['refetrfo_form_plugin']) ? $options['refetrfo_form_plugin'] : 'cf7';
         
         // Initialize all integrations
-        $this->cf7 = new RT_Integration_CF7();
-        $this->wpforms = new RT_Integration_WPForms();
-        $this->gravity = new RT_Integration_Gravity();
+        $this->cf7 = new Refetrfo_Integration_CF7();
+        $this->wpforms = new Refetrfo_Integration_WPForms();
+        $this->gravity = new Refetrfo_Integration_Gravity();
     }
 
     /**
