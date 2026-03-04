@@ -4,7 +4,7 @@ Tags: analytics, tracking, utm, wpforms, contact-form-7
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 0.1.3
+Stable tag: 0.1.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -100,12 +100,16 @@ Typical flow:
 
 1. Bump the plugin version in `referrertracker.php`.
 2. Create a GitHub Release with a tag like `v0.1.1`.
+3. The repository GitHub Action will automatically attach a ZIP asset with the correct plugin folder structure.
 
 == Changelog ==
 
+= 0.1.4 =
+* Add tabbed instructions for supported form plugins on the settings page.
+* Automate release ZIP attachment via GitHub Actions.
+
 = 0.1.3 =
 * Add Settings link in plugin list and redirect to settings after activation.
-* Add tabbed instructions for supported form plugins on the settings page.
 
 = 0.1.2 =
 * Fix GitHub update package URL to avoid zipball download issues.
