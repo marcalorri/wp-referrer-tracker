@@ -4,7 +4,7 @@ Tags: analytics, tracking, utm, wpforms, contact-form-7
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 0.1.0
+Stable tag: 0.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -70,6 +70,28 @@ Steps:
 
 If you already have hidden fields with ReferrerTracker IDs/names/classes, it should work without additional changes.
 
+== Gravity Forms ==
+
+Gravity Forms can populate fields dynamically using a "Parameter Name".
+
+This plugin adds server-side support for Gravity Forms by reading ReferrerTracker cookies and providing them as dynamic values.
+
+Steps:
+
+1. Add Hidden Fields for the parameters you want to capture.
+2. For each hidden field, enable "Allow field to be populated dynamically".
+3. Set the "Parameter Name" to either:
+
+- `rt_source`, `rt_medium`, `rt_campaign`, `rt_content`, `rt_term`
+- `rt_referrer`, `rt_landing_page`
+- `rt_gclid`, `rt_fbclid`, `rt_msclkid`, `rt_ttclid`, `rt_li_fat_id`, `rt_twclid`, `rt_epik`, `rt_rdt_cid`
+
+Or, alternatively, you can use the ReferrerTracker class-style names and the plugin will map them:
+
+- `js-rt-source`, `js-rt-medium`, `js-rt-campaign`, `js-rt-content`, `js-rt-term`
+- `js-rt-referrer`, `js-rt-landing-page`
+- `js-rt-gclid`, `js-rt-fbclid`, `js-rt-msclkid`, `js-rt-ttclid`, `js-rt-li-fat-id`, `js-rt-twclid`, `js-rt-epik`, `js-rt-rdt-cid`
+
 == Updates (GitHub Releases) ==
 
 This plugin can be updated from GitHub Releases.
@@ -81,6 +103,9 @@ Typical flow:
 3. Attach a ZIP asset (optional). If no ZIP is attached, WordPress will use GitHub's zipball URL.
 
 == Changelog ==
+
+= 0.1.1 =
+* Add Gravity Forms server-side dynamic population support via cookies.
 
 = 0.1.0 =
 * Initial release.
