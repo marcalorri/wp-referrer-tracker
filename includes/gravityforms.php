@@ -22,11 +22,12 @@ function referrertracker_gform_field_value( $value, $field, $name ) {
 		return $value;
 	}
 
-	if ( ! isset( $_COOKIE[ $cookie_name ] ) ) {
+	$raw = filter_input( INPUT_COOKIE, $cookie_name, FILTER_UNSAFE_RAW );
+	if ( null === $raw || false === $raw || '' === $raw ) {
 		return $value;
 	}
 
-	$raw = wp_unslash( $_COOKIE[ $cookie_name ] );
+	$raw = wp_unslash( $raw );
 	if ( is_array( $raw ) ) {
 		return $value;
 	}

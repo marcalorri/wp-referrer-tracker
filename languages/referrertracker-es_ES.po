@@ -30,26 +30,23 @@ msgstr "Depuración"
 msgid "Enabled"
 msgstr "Activado"
 
-msgid "ReferrerTracker: the file <code>%s</code> is missing or empty. Add the script file (downloaded from your ReferrerTracker dashboard) and update the plugin release on GitHub."
-msgstr "ReferrerTracker: el archivo <code>%s</code> no existe o está vacío. Añade el script (descargado desde tu panel de ReferrerTracker) y actualiza la release del plugin en GitHub."
-
 msgid "Quick setup"
 msgstr "Configuración rápida"
 
-msgid "Get your API Key in your ReferrerTracker dashboard: <a href=\"%s\" target=\"_blank\" rel=\"noopener noreferrer\">%s</a>"
-msgstr "Obtén tu clave API en tu panel de ReferrerTracker: <a href=\"%s\" target=\"_blank\" rel=\"noopener noreferrer\">%s</a>"
+msgid "Get your API Key in your ReferrerTracker dashboard:"
+msgstr "Obtén tu clave API en tu panel de ReferrerTracker:"
 
-msgid "Paste it in the Settings tab below and click Save"
-msgstr "Pégala en la pestaña de Ajustes de abajo y haz clic en Guardar"
+msgid "Paste it in the Settings section below and click Save"
+msgstr "Pégala en la sección de Ajustes de abajo y haz clic en Guardar"
 
 msgid "Add hidden fields to your forms to capture the parameters you need (see each form tab)"
 msgstr "Añade campos ocultos en tus formularios para capturar los parámetros que necesites (ver pestañas de formularios)"
 
-msgid "Documentation: <a href=\"%s\" target=\"_blank\" rel=\"noopener noreferrer\">%s</a>"
-msgstr "Documentación: <a href=\"%s\" target=\"_blank\" rel=\"noopener noreferrer\">%s</a>"
+msgid "Documentation:"
+msgstr "Documentación:"
 
-msgid "Implementation guide: <a href=\"%s\" target=\"_blank\" rel=\"noopener noreferrer\">%s</a>"
-msgstr "Guía de implementación: <a href=\"%s\" target=\"_blank\" rel=\"noopener noreferrer\">%s</a>"
+msgid "Implementation guide:"
+msgstr "Guía de implementación:"
 
 msgid "WPForms"
 msgstr "WPForms"
@@ -63,38 +60,62 @@ msgstr "Añade campos ocultos para los parámetros que quieras capturar"
 msgid "For each hidden field, set <strong>CSS Class</strong> to one of:"
 msgstr "Para cada campo oculto, configura la <strong>clase CSS</strong> con uno de estos valores:"
 
-msgid "Tip: Hidden fields can also be filled by ID (recommended). Use IDs like <code>rt-source</code> or <code>rt-gclid</code>."
-msgstr "Consejo: los campos ocultos también se pueden rellenar por ID (recomendado). Usa IDs como <code>rt-source</code> o <code>rt-gclid</code>."
+msgid "Note: WPForms generates dynamic IDs, so using the CSS classes (<code>js-rt-*</code>) is the recommended approach."
+msgstr "Nota: WPForms genera IDs dinámicos, así que usar las clases CSS (<code>js-rt-*</code>) es el enfoque recomendado."
+
+msgid "If fields are not detected automatically, add this JavaScript snippet:"
+msgstr "Si los campos no se detectan automáticamente, añade este snippet de JavaScript:"
 
 msgid "Gravity Forms"
 msgstr "Gravity Forms"
 
-msgid "Gravity Forms supports dynamic population. This plugin reads ReferrerTracker cookies and provides values when a field is configured to populate dynamically."
-msgstr "Gravity Forms permite el rellenado dinámico. Este plugin lee las cookies de ReferrerTracker y proporciona valores cuando un campo está configurado para rellenarse dinámicamente."
+msgid "Gravity Forms is a powerful premium forms plugin. It supports hidden fields out of the box."
+msgstr "Gravity Forms es un plugin premium de formularios muy potente. Soporta campos ocultos de forma nativa."
 
-msgid "Enable <strong>Allow field to be populated dynamically</strong>"
-msgstr "Activa <strong>Permitir que el campo se rellene dinámicamente</strong>"
+msgid "Step 1: Add hidden fields"
+msgstr "Paso 1: Añadir campos ocultos"
 
-msgid "Set <strong>Parameter Name</strong> to one of:"
-msgstr "Configura el <strong>nombre del parámetro</strong> como uno de estos valores:"
+msgid "Edit your form in Gravity Forms"
+msgstr "Edita tu formulario en Gravity Forms"
 
-msgid "You can also use class-style names and the plugin will map them (example: <code>js-rt-referrer</code>)."
-msgstr "También puedes usar nombres estilo clase y el plugin los mapeará (ejemplo: <code>js-rt-referrer</code>)."
+msgid "Add a <strong>Hidden</strong> field from <strong>Advanced Fields</strong>"
+msgstr "Añade un campo <strong>Hidden</strong> desde <strong>Advanced Fields</strong>"
+
+msgid "In field settings, set <strong>Field Name</strong> to <code>rt_source</code>"
+msgstr "En la configuración del campo, establece el <strong>Field Name</strong> como <code>rt_source</code>"
+
+msgid "In the <strong>Advanced</strong> tab, set <strong>CSS Class</strong> to <code>js-rt-source</code>"
+msgstr "En la pestaña <strong>Advanced</strong>, configura la <strong>CSS Class</strong> como <code>js-rt-source</code>"
+
+msgid "Repeat for each tracking field you need"
+msgstr "Repite para cada campo de tracking que necesites"
+
+msgid "Alternative: gform_pre_render"
+msgstr "Alternativa: gform_pre_render"
+
+msgid "You can also add fields dynamically with PHP:"
+msgstr "También puedes añadir los campos dinámicamente con PHP:"
 
 msgid "Contact Form 7"
 msgstr "Contact Form 7"
 
-msgid "Contact Form 7 typically renders the class on the input itself, so ReferrerTracker can fill values without additional changes."
-msgstr "Contact Form 7 normalmente aplica la clase en el propio input, así que ReferrerTracker puede rellenar los valores sin cambios adicionales."
+msgid "Contact Form 7 is one of the most popular WordPress form plugins. Integration is straightforward."
+msgstr "Contact Form 7 es uno de los plugins de formularios más populares de WordPress. La integración es sencilla."
 
-msgid "Recommended approach:"
-msgstr "Enfoque recomendado:"
+msgid "Step 1: Add hidden fields to the form"
+msgstr "Paso 1: Añade los campos ocultos al formulario"
 
-msgid "Add hidden fields and set their IDs to <code>rt-source</code>, <code>rt-medium</code>, <code>rt-campaign</code>, etc."
-msgstr "Añade campos ocultos y pon sus IDs como <code>rt-source</code>, <code>rt-medium</code>, <code>rt-campaign</code>, etc."
+msgid "Edit your Contact Form 7 form and paste these hidden fields:"
+msgstr "Edita tu formulario de Contact Form 7 y pega estos campos ocultos:"
 
-msgid "Alternatively use names like <code>rt_source</code> or classes like <code>js-rt-source</code>"
-msgstr "Alternativamente, usa nombres como <code>rt_source</code> o clases como <code>js-rt-source</code>"
+msgid "Step 2: Configure the notification email"
+msgstr "Paso 2: Configura el email de notificación"
+
+msgid "In the \"Mail\" tab, add these tags to include tracking data in the email:"
+msgstr "En la pestaña \"Mail\", añade estas etiquetas para incluir los datos de tracking en el email:"
+
+msgid "Done! ReferrerTracker will detect fields by their ID (prefix <code>rt_</code>) and fill them automatically."
+msgstr "¡Listo! ReferrerTracker detectará los campos por su ID (prefijo <code>rt_</code>) y los rellenará automáticamente."
 
 msgid "ReferrerTracker: filesystem unavailable during update."
 msgstr "ReferrerTracker: el sistema de archivos no está disponible durante la actualización."
@@ -104,3 +125,72 @@ msgstr "ReferrerTracker: no se pudo renombrar la carpeta extraída durante la ac
 
 msgid "Adds ReferrerTracker tracking script and helps populate tracking fields in supported form plugins."
 msgstr "Añade el script de seguimiento de ReferrerTracker y ayuda a rellenar campos de tracking en plugins de formularios compatibles."
+
+msgid "ReferrerTracker: the file"
+msgstr "ReferrerTracker: el archivo"
+
+msgid "is missing or empty. Add the script file (downloaded from your ReferrerTracker dashboard) and update the plugin release on GitHub."
+msgstr "no existe o está vacío. Añade el script (descargado desde tu panel de ReferrerTracker) y actualiza la release del plugin en GitHub."
+
+msgid "Elementor Pro includes a powerful forms builder. Integration requires a few extra steps."
+msgstr "Elementor Pro incluye un potente constructor de formularios. La integración requiere algunos pasos adicionales."
+
+msgid "Step 1: Add hidden fields in Elementor"
+msgstr "Paso 1: Añade campos ocultos en Elementor"
+
+msgid "Edit your page with Elementor"
+msgstr "Edita tu página con Elementor"
+
+msgid "Select the Form widget"
+msgstr "Selecciona el widget de Form"
+
+msgid "Add a new field and select type <strong>Hidden</strong>"
+msgstr "Añade un nuevo campo y selecciona tipo <strong>Hidden</strong>"
+
+msgid "In the field <strong>ID</strong>, type: <code>rt_source</code>"
+msgstr "En el campo <strong>ID</strong>, escribe: <code>rt_source</code>"
+
+msgid "Repeat for each tracking field"
+msgstr "Repite para cada campo de tracking"
+
+msgid "Step 2: Verify IDs are applied correctly"
+msgstr "Paso 2: Verificar que los IDs se aplican correctamente"
+
+msgid "Elementor sometimes modifies IDs. Add this script to ensure compatibility:"
+msgstr "Elementor a veces modifica los IDs. Añade este script para asegurar la compatibilidad:"
+
+msgid "Step 3: Configure form actions"
+msgstr "Paso 3: Configurar las acciones del formulario"
+
+msgid "Go to Actions After Submit"
+msgstr "Ve a Actions After Submit"
+
+msgid "If you use Email, hidden fields are included automatically"
+msgstr "Si usas Email, los campos ocultos se incluirán automáticamente"
+
+msgid "If you use Webhook, fields are sent in the JSON payload"
+msgstr "Si usas Webhook, los campos se enviarán en el payload JSON"
+
+msgid "CRM integrations: if you connect Elementor to HubSpot, Mailchimp, or other CRMs via native actions, tracking fields are sent automatically."
+msgstr "Integración con CRMs: si conectas Elementor con HubSpot, Mailchimp u otros CRMs mediante acciones nativas, los campos de tracking se enviarán automáticamente."
+
+msgid "Fluent Forms"
+msgstr "Fluent Forms"
+
+msgid "Fluent Forms is a lightweight and fast forms plugin. You can add tracking hidden fields using shortcodes."
+msgstr "Fluent Forms es un plugin de formularios ligero y rápido. Puedes añadir campos ocultos de tracking usando shortcodes."
+
+msgid "Ninja Forms"
+msgstr "Ninja Forms"
+
+msgid "Ninja Forms supports hidden fields natively. Use a field key and CSS class so ReferrerTracker can populate values."
+msgstr "Ninja Forms soporta campos ocultos de forma nativa. Usa un Field Key y una clase CSS para que ReferrerTracker pueda rellenar los valores."
+
+msgid "Add a <strong>Hidden</strong> field to your form"
+msgstr "Añade un campo <strong>Hidden</strong> a tu formulario"
+
+msgid "In <strong>Administration</strong> → <strong>Field Key</strong>, type: <code>rt_source</code>"
+msgstr "En <strong>Administration</strong> → <strong>Field Key</strong>, escribe: <code>rt_source</code>"
+
+msgid "In <strong>Display</strong> → <strong>Custom CSS Classes</strong>, add: <code>js-rt-source</code>"
+msgstr "En <strong>Display</strong> → <strong>Custom CSS Classes</strong>, añade: <code>js-rt-source</code>"

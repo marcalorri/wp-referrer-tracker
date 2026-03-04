@@ -7,14 +7,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Plugin Name: ReferrerTracker
  * Description: Adds ReferrerTracker tracking script and helps populate tracking fields in supported form plugins.
- * Version: 0.1.6
+ * Version: 0.1.8
  * Author: ReferrerTracker
  * License: GPLv2 or later
  * Text Domain: referrertracker
  * Domain Path: /languages
  */
 
-define( 'REFERRERTRACKER_VERSION', '0.1.6' );
+define( 'REFERRERTRACKER_VERSION', '0.1.8' );
 define( 'REFERRERTRACKER_PLUGIN_FILE', __FILE__ );
 define( 'REFERRERTRACKER_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'REFERRERTRACKER_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -28,7 +28,11 @@ define( 'REFERRERTRACKER_PLUGIN_SLUG', 'referrertracker' );
 add_action( 'plugins_loaded', 'referrertracker_load_textdomain' );
 
 function referrertracker_load_textdomain() {
-	load_plugin_textdomain( 'referrertracker', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+	$locale = function_exists( 'determine_locale' ) ? determine_locale() : get_locale();
+	$mofile = REFERRERTRACKER_PLUGIN_DIR . 'languages/referrertracker-' . $locale . '.mo';
+	if ( file_exists( $mofile ) ) {
+		load_textdomain( 'referrertracker', $mofile );
+	}
 }
 
 require_once REFERRERTRACKER_PLUGIN_DIR . 'includes/frontend.php';
