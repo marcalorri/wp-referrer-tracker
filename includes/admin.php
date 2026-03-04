@@ -11,7 +11,47 @@ function referrertracker_admin_register() {
 
 	add_action( 'admin_menu', 'referrertracker_admin_menu' );
 	add_action( 'admin_init', 'referrertracker_register_settings' );
+	add_action( 'admin_init', 'referrertracker_maybe_redirect_to_settings' );
+	add_filter( 'plugin_action_links_' . plugin_basename( REFERRERTRACKER_PLUGIN_FILE ), 'referrertracker_plugin_action_links' );
 	add_action( 'admin_notices', 'referrertracker_admin_notices' );
+}
+
+function referrertracker_activation() {
+	set_transient( 'referrertracker_activation_redirect', 1, 30 );
+}
+
+function referrertracker_maybe_redirect_to_settings() {
+	if ( ! get_transient( 'referrertracker_activation_redirect' ) ) {
+		return;
+	}
+
+	delete_transient( 'referrertracker_activation_redirect' );
+
+	if ( is_network_admin() ) {
+		return;
+	}
+
+	if ( isset( $_GET['activate-multi'] ) ) {
+		return;
+	}
+
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	wp_safe_redirect( admin_url( 'options-general.php?page=referrertracker' ) );
+	exit;
+}
+
+function referrertracker_plugin_action_links( $links ) {
+	if ( ! is_array( $links ) ) {
+		$links = array();
+	}
+
+	$settings_link = '<a href="' . esc_url( admin_url( 'options-general.php?page=referrertracker' ) ) . '">Settings</a>';
+	array_unshift( $links, $settings_link );
+
+	return $links;
 }
 
 function referrertracker_admin_menu() {
