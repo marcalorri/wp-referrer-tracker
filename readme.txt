@@ -100,7 +100,6 @@ Typical flow:
 
 1. Bump the plugin version in `referrertracker.php`.
 2. Create a GitHub Release with a tag like `v0.1.1`.
-3. Attach a ZIP asset (optional). If no ZIP is attached, WordPress will use GitHub's zipball URL.
 
 == Changelog ==
 

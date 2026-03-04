@@ -1,0 +1,38 @@
+name: Build plugin ZIP and attach to Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build-zip:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Determine version
+        id: version
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          TAG_STRIPPED="${TAG#v}"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "version=${TAG_STRIPPED}" >> "$GITHUB_OUTPUT"
+
+      - name: Create plugin zip
+        id: zip
+        run: |
+          ZIP_NAME="referrertracker-${{ steps.version.outputs.version }}.zip"
+          git archive --format=zip --prefix=referrertracker/ -o "$ZIP_NAME" HEAD
+          echo "zip_name=$ZIP_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Upload release asset
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${{ steps.version.outputs.tag }}" "${{ steps.zip.outputs.zip_name }}" --clobber
