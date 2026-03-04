@@ -7,13 +7,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Plugin Name: ReferrerTracker
  * Description: Adds ReferrerTracker tracking script and helps populate tracking fields in supported form plugins.
- * Version: 0.1.1
+ * Version: 0.1.2
  * Author: ReferrerTracker
  * License: GPLv2 or later
  * Text Domain: referrertracker
  */
 
-define( 'REFERRERTRACKER_VERSION', '0.1.1' );
+define( 'REFERRERTRACKER_VERSION', '0.1.2' );
 define( 'REFERRERTRACKER_PLUGIN_FILE', __FILE__ );
 define( 'REFERRERTRACKER_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'REFERRERTRACKER_PLUGIN_URL', plugin_dir_url( __FILE__ ) );

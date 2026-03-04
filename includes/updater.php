@@ -55,11 +55,6 @@ class ReferrerTracker_GitHub_Updater {
 			return $source;
 		}
 
-		$source_basename = basename( untrailingslashit( $source ) );
-		if ( $source_basename === $this->slug ) {
-			return $source;
-		}
-
 		global $wp_filesystem;
 		if ( ! $wp_filesystem ) {
 			require_once ABSPATH . 'wp-admin/includes/file.php';
@@ -70,7 +65,34 @@ class ReferrerTracker_GitHub_Updater {
 			return new WP_Error( 'referrertracker_filesystem_unavailable', 'ReferrerTracker: filesystem unavailable during update.' );
 		}
 
-		$desired_source = trailingslashit( $remote_source ) . $this->slug;
+		$plugin_file = trailingslashit( $source ) . basename( $this->plugin_file );
+		if ( ! $wp_filesystem->exists( $plugin_file ) ) {
+			$dirlist = $wp_filesystem->dirlist( $source, false, false );
+			if ( is_array( $dirlist ) ) {
+				$subdirs = array();
+				foreach ( $dirlist as $name => $item ) {
+					if ( is_array( $item ) && ! empty( $item['type'] ) && $item['type'] === 'd' ) {
+						$subdirs[] = (string) $name;
+					}
+				}
+
+				if ( count( $subdirs ) === 1 ) {
+					$candidate = trailingslashit( $source ) . $subdirs[0];
+					$candidate_plugin_file = trailingslashit( $candidate ) . basename( $this->plugin_file );
+					if ( $wp_filesystem->exists( $candidate_plugin_file ) ) {
+						$source = $candidate;
+					}
+				}
+			}
+		}
+
+		$source_basename = basename( untrailingslashit( $source ) );
+		if ( $source_basename === $this->slug ) {
+			return $source;
+		}
+
+		$parent_dir = trailingslashit( dirname( untrailingslashit( $source ) ) );
+		$desired_source = $parent_dir . $this->slug;
 
 		if ( $wp_filesystem->is_dir( $desired_source ) ) {
 			$wp_filesystem->delete( $desired_source, true );
@@ -237,8 +259,8 @@ class ReferrerTracker_GitHub_Updater {
 			}
 		}
 
-		if ( $download_url === '' && ! empty( $data['zipball_url'] ) ) {
-			$download_url = (string) $data['zipball_url'];
+		if ( $download_url === '' ) {
+			$download_url = 'https://github.com/' . rawurlencode( $this->owner ) . '/' . rawurlencode( $this->repo ) . '/archive/refs/tags/' . rawurlencode( $tag ) . '.zip';
 		}
 
 		$release = array(

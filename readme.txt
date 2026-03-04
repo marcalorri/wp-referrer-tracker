@@ -4,7 +4,7 @@ Tags: analytics, tracking, utm, wpforms, contact-form-7
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 0.1.1
+Stable tag: 0.1.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -103,6 +103,9 @@ Typical flow:
 3. Attach a ZIP asset (optional). If no ZIP is attached, WordPress will use GitHub's zipball URL.
 
 == Changelog ==
+
+= 0.1.2 =
+* Fix GitHub update package URL to avoid zipball download issues.
 
 = 0.1.1 =
 * Add Gravity Forms server-side dynamic population support via cookies.
