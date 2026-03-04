@@ -1,0 +1,106 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: ReferrerTracker\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-04 00:00+0000\n"
+"PO-Revision-Date: 2026-03-04 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Cascade\n"
+
+msgid "Settings"
+msgstr "Ajustes"
+
+msgid "ReferrerTracker"
+msgstr "ReferrerTracker"
+
+msgid "API Key"
+msgstr "Clave API"
+
+msgid "Cookie Duration (days)"
+msgstr "Duración de la cookie (días)"
+
+msgid "Debug"
+msgstr "Depuración"
+
+msgid "Enabled"
+msgstr "Activado"
+
+msgid "ReferrerTracker: the file <code>%s</code> is missing or empty. Add the script file (downloaded from your ReferrerTracker dashboard) and update the plugin release on GitHub."
+msgstr "ReferrerTracker: el archivo <code>%s</code> no existe o está vacío. Añade el script (descargado desde tu panel de ReferrerTracker) y actualiza la release del plugin en GitHub."
+
+msgid "Quick setup"
+msgstr "Configuración rápida"
+
+msgid "Get your API Key in your ReferrerTracker dashboard: <a href=\"%s\" target=\"_blank\" rel=\"noopener noreferrer\">%s</a>"
+msgstr "Obtén tu clave API en tu panel de ReferrerTracker: <a href=\"%s\" target=\"_blank\" rel=\"noopener noreferrer\">%s</a>"
+
+msgid "Paste it in the Settings tab below and click Save"
+msgstr "Pégala en la pestaña de Ajustes de abajo y haz clic en Guardar"
+
+msgid "Add hidden fields to your forms to capture the parameters you need (see each form tab)"
+msgstr "Añade campos ocultos en tus formularios para capturar los parámetros que necesites (ver pestañas de formularios)"
+
+msgid "Documentation: <a href=\"%s\" target=\"_blank\" rel=\"noopener noreferrer\">%s</a>"
+msgstr "Documentación: <a href=\"%s\" target=\"_blank\" rel=\"noopener noreferrer\">%s</a>"
+
+msgid "Implementation guide: <a href=\"%s\" target=\"_blank\" rel=\"noopener noreferrer\">%s</a>"
+msgstr "Guía de implementación: <a href=\"%s\" target=\"_blank\" rel=\"noopener noreferrer\">%s</a>"
+
+msgid "WPForms"
+msgstr "WPForms"
+
+msgid "WPForms sometimes places your \"Field CSS Class\" on a wrapper element instead of the actual <code>&lt;input&gt;</code>. This plugin includes a bridge that copies <code>js-rt-*</code> classes to the input so ReferrerTracker can fill the values."
+msgstr "WPForms a veces aplica la \"Field CSS Class\" en un contenedor en lugar de hacerlo en el <code>&lt;input&gt;</code>. Este plugin incluye un puente que copia las clases <code>js-rt-*</code> al input para que ReferrerTracker pueda rellenar los valores."
+
+msgid "Add Hidden Fields for the parameters you want to capture"
+msgstr "Añade campos ocultos para los parámetros que quieras capturar"
+
+msgid "For each hidden field, set <strong>CSS Class</strong> to one of:"
+msgstr "Para cada campo oculto, configura la <strong>clase CSS</strong> con uno de estos valores:"
+
+msgid "Tip: Hidden fields can also be filled by ID (recommended). Use IDs like <code>rt-source</code> or <code>rt-gclid</code>."
+msgstr "Consejo: los campos ocultos también se pueden rellenar por ID (recomendado). Usa IDs como <code>rt-source</code> o <code>rt-gclid</code>."
+
+msgid "Gravity Forms"
+msgstr "Gravity Forms"
+
+msgid "Gravity Forms supports dynamic population. This plugin reads ReferrerTracker cookies and provides values when a field is configured to populate dynamically."
+msgstr "Gravity Forms permite el rellenado dinámico. Este plugin lee las cookies de ReferrerTracker y proporciona valores cuando un campo está configurado para rellenarse dinámicamente."
+
+msgid "Enable <strong>Allow field to be populated dynamically</strong>"
+msgstr "Activa <strong>Permitir que el campo se rellene dinámicamente</strong>"
+
+msgid "Set <strong>Parameter Name</strong> to one of:"
+msgstr "Configura el <strong>nombre del parámetro</strong> como uno de estos valores:"
+
+msgid "You can also use class-style names and the plugin will map them (example: <code>js-rt-referrer</code>)."
+msgstr "También puedes usar nombres estilo clase y el plugin los mapeará (ejemplo: <code>js-rt-referrer</code>)."
+
+msgid "Contact Form 7"
+msgstr "Contact Form 7"
+
+msgid "Contact Form 7 typically renders the class on the input itself, so ReferrerTracker can fill values without additional changes."
+msgstr "Contact Form 7 normalmente aplica la clase en el propio input, así que ReferrerTracker puede rellenar los valores sin cambios adicionales."
+
+msgid "Recommended approach:"
+msgstr "Enfoque recomendado:"
+
+msgid "Add hidden fields and set their IDs to <code>rt-source</code>, <code>rt-medium</code>, <code>rt-campaign</code>, etc."
+msgstr "Añade campos ocultos y pon sus IDs como <code>rt-source</code>, <code>rt-medium</code>, <code>rt-campaign</code>, etc."
+
+msgid "Alternatively use names like <code>rt_source</code> or classes like <code>js-rt-source</code>"
+msgstr "Alternativamente, usa nombres como <code>rt_source</code> o clases como <code>js-rt-source</code>"
+
+msgid "ReferrerTracker: filesystem unavailable during update."
+msgstr "ReferrerTracker: el sistema de archivos no está disponible durante la actualización."
+
+msgid "ReferrerTracker: failed to rename the extracted folder during update."
+msgstr "ReferrerTracker: no se pudo renombrar la carpeta extraída durante la actualización."
+
+msgid "Adds ReferrerTracker tracking script and helps populate tracking fields in supported form plugins."
+msgstr "Añade el script de seguimiento de ReferrerTracker y ayuda a rellenar campos de tracking en plugins de formularios compatibles."

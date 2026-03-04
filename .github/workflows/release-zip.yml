@@ -16,6 +16,11 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
+      - name: Install gettext
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gettext zip rsync
+
       - name: Determine version
         id: version
         run: |
@@ -28,7 +33,29 @@ jobs:
         id: zip
         run: |
           ZIP_NAME="referrertracker-${{ steps.version.outputs.version }}.zip"
-          git archive --format=zip --prefix=referrertracker/ -o "$ZIP_NAME" HEAD
+
+          BUILD_DIR="$(mktemp -d)"
+          PLUGIN_DIR="$BUILD_DIR/referrertracker"
+          mkdir -p "$PLUGIN_DIR"
+
+          rsync -a --delete \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='.gitignore' \
+            --exclude='referrertracker-*.zip' \
+            ./ "$PLUGIN_DIR/"
+
+          if [ -d "$PLUGIN_DIR/languages" ]; then
+            for po in "$PLUGIN_DIR"/languages/*.po; do
+              if [ -f "$po" ]; then
+                mo="${po%.po}.mo"
+                msgfmt "$po" -o "$mo"
+              fi
+            done
+          fi
+
+          (cd "$BUILD_DIR" && zip -r "$GITHUB_WORKSPACE/$ZIP_NAME" referrertracker)
+
           echo "zip_name=$ZIP_NAME" >> "$GITHUB_OUTPUT"
 
       - name: Upload release asset

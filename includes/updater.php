@@ -62,7 +62,7 @@ class ReferrerTracker_GitHub_Updater {
 		}
 
 		if ( ! $wp_filesystem ) {
-			return new WP_Error( 'referrertracker_filesystem_unavailable', 'ReferrerTracker: filesystem unavailable during update.' );
+			return new WP_Error( 'referrertracker_filesystem_unavailable', __( 'ReferrerTracker: filesystem unavailable during update.', 'referrertracker' ) );
 		}
 
 		$plugin_file = trailingslashit( $source ) . basename( $this->plugin_file );
@@ -100,7 +100,7 @@ class ReferrerTracker_GitHub_Updater {
 
 		$moved = $wp_filesystem->move( $source, $desired_source, true );
 		if ( ! $moved ) {
-			return new WP_Error( 'referrertracker_rename_failed', 'ReferrerTracker: failed to rename the extracted folder during update.' );
+			return new WP_Error( 'referrertracker_rename_failed', __( 'ReferrerTracker: failed to rename the extracted folder during update.', 'referrertracker' ) );
 		}
 
 		return $desired_source;
@@ -166,7 +166,7 @@ class ReferrerTracker_GitHub_Updater {
 		$info->homepage    = isset( $release['html_url'] ) ? (string) $release['html_url'] : '';
 		$info->download_link = isset( $release['download_url'] ) ? (string) $release['download_url'] : '';
 		$info->sections    = array(
-			'description' => 'Adds ReferrerTracker tracking script and helps populate tracking fields in supported form plugins.',
+			'description' => __( 'Adds ReferrerTracker tracking script and helps populate tracking fields in supported form plugins.', 'referrertracker' ),
 		);
 
 		return $info;

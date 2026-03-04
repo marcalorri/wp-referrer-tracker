@@ -48,7 +48,7 @@ function referrertracker_plugin_action_links( $links ) {
 		$links = array();
 	}
 
-	$settings_link = '<a href="' . esc_url( admin_url( 'options-general.php?page=referrertracker' ) ) . '">Settings</a>';
+	$settings_link = '<a href="' . esc_url( admin_url( 'options-general.php?page=referrertracker' ) ) . '">' . esc_html__( 'Settings', 'referrertracker' ) . '</a>';
 	array_unshift( $links, $settings_link );
 
 	return $links;
@@ -56,8 +56,8 @@ function referrertracker_plugin_action_links( $links ) {
 
 function referrertracker_admin_menu() {
 	add_options_page(
-		'ReferrerTracker',
-		'ReferrerTracker',
+		__( 'ReferrerTracker', 'referrertracker' ),
+		__( 'ReferrerTracker', 'referrertracker' ),
 		'manage_options',
 		'referrertracker',
 		'referrertracker_render_settings_page'
@@ -81,14 +81,14 @@ function referrertracker_register_settings() {
 
 	add_settings_section(
 		'referrertracker_main',
-		'Settings',
+		__( 'Settings', 'referrertracker' ),
 		'__return_null',
 		'referrertracker'
 	);
 
 	add_settings_field(
 		'referrertracker_api_key',
-		'API Key',
+		__( 'API Key', 'referrertracker' ),
 		'referrertracker_field_api_key',
 		'referrertracker',
 		'referrertracker_main'
@@ -96,7 +96,7 @@ function referrertracker_register_settings() {
 
 	add_settings_field(
 		'referrertracker_cookie_duration',
-		'Cookie Duration (days)',
+		__( 'Cookie Duration (days)', 'referrertracker' ),
 		'referrertracker_field_cookie_duration',
 		'referrertracker',
 		'referrertracker_main'
@@ -104,7 +104,7 @@ function referrertracker_register_settings() {
 
 	add_settings_field(
 		'referrertracker_debug',
-		'Debug',
+		__( 'Debug', 'referrertracker' ),
 		'referrertracker_field_debug',
 		'referrertracker',
 		'referrertracker_main'
@@ -158,7 +158,7 @@ function referrertracker_field_debug() {
 	$options = referrertracker_get_options();
 	$checked = ! empty( $options['debug'] );
 
-	echo '<label><input type="checkbox" name="' . esc_attr( REFERRERTRACKER_OPTION_KEY ) . '[debug]" value="1" ' . checked( $checked, true, false ) . ' /> Enabled</label>';
+	echo '<label><input type="checkbox" name="' . esc_attr( REFERRERTRACKER_OPTION_KEY ) . '[debug]" value="1" ' . checked( $checked, true, false ) . ' /> ' . esc_html__( 'Enabled', 'referrertracker' ) . '</label>';
 }
 
 function referrertracker_admin_notices() {
@@ -173,7 +173,11 @@ function referrertracker_admin_notices() {
 
 	$path = REFERRERTRACKER_PLUGIN_DIR . 'assets/referrer-tracker.min.js';
 	if ( ! file_exists( $path ) || filesize( $path ) < 10 ) {
-		echo '<div class="notice notice-warning"><p>ReferrerTracker: the file <code>assets/referrer-tracker.min.js</code> is missing or empty. Add the script file (downloaded from your ReferrerTracker dashboard) and update the plugin release on GitHub.</p></div>';
+		$message = sprintf(
+			__( 'ReferrerTracker: the file <code>%s</code> is missing or empty. Add the script file (downloaded from your ReferrerTracker dashboard) and update the plugin release on GitHub.', 'referrertracker' ),
+			'assets/referrer-tracker.min.js'
+		);
+		echo '<div class="notice notice-warning"><p>' . wp_kses_post( $message ) . '</p></div>';
 	}
 }
 
@@ -185,7 +189,7 @@ function referrertracker_render_settings_page() {
 	$tab = referrertracker_get_admin_tab();
 
 	echo '<div class="wrap">';
-	echo '<h1>ReferrerTracker</h1>';
+	echo '<h1>' . esc_html__( 'ReferrerTracker', 'referrertracker' ) . '</h1>';
 
 	referrertracker_render_general_instructions();
 	referrertracker_render_tabs( $tab );
@@ -209,23 +213,23 @@ function referrertracker_render_general_instructions() {
 	$implementation_url = 'https://www.referrertracker.com/es/soporte/implementacion';
 
 	echo '<div class="notice notice-info" style="padding: 12px 12px 8px;">';
-	echo '<p><strong>Quick setup</strong></p>';
+	echo '<p><strong>' . esc_html__( 'Quick setup', 'referrertracker' ) . '</strong></p>';
 	echo '<ol style="margin-top: 8px;">';
-	echo '<li>Get your API Key in your ReferrerTracker dashboard: <a href="' . esc_url( $dashboard_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $dashboard_url ) . '</a></li>';
-	echo '<li>Paste it in the Settings tab below and click Save</li>';
-	echo '<li>Add hidden fields to your forms to capture the parameters you need (see each form tab)</li>';
+	echo '<li>' . sprintf( wp_kses_post( __( 'Get your API Key in your ReferrerTracker dashboard: <a href="%s" target="_blank" rel="noopener noreferrer">%s</a>', 'referrertracker' ) ), esc_url( $dashboard_url ), esc_html( $dashboard_url ) ) . '</li>';
+	echo '<li>' . esc_html__( 'Paste it in the Settings tab below and click Save', 'referrertracker' ) . '</li>';
+	echo '<li>' . esc_html__( 'Add hidden fields to your forms to capture the parameters you need (see each form tab)', 'referrertracker' ) . '</li>';
 	echo '</ol>';
-	echo '<p style="margin-top: 8px;">Documentation: <a href="' . esc_url( $docs_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $docs_url ) . '</a><br />Implementation guide: <a href="' . esc_url( $implementation_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $implementation_url ) . '</a></p>';
+	echo '<p style="margin-top: 8px;">' . sprintf( wp_kses_post( __( 'Documentation: <a href="%s" target="_blank" rel="noopener noreferrer">%s</a>', 'referrertracker' ) ), esc_url( $docs_url ), esc_html( $docs_url ) ) . '<br />' . sprintf( wp_kses_post( __( 'Implementation guide: <a href="%s" target="_blank" rel="noopener noreferrer">%s</a>', 'referrertracker' ) ), esc_url( $implementation_url ), esc_html( $implementation_url ) ) . '</p>';
 	echo '</div>';
 }
 
 function referrertracker_render_tabs( $active_tab ) {
 	$base_url = admin_url( 'options-general.php?page=referrertracker' );
 	$tabs = array(
-		'settings'     => 'Settings',
-		'wpforms'      => 'WPForms',
-		'gravityforms' => 'Gravity Forms',
-		'cf7'          => 'Contact Form 7',
+		'settings'     => __( 'Settings', 'referrertracker' ),
+		'wpforms'      => __( 'WPForms', 'referrertracker' ),
+		'gravityforms' => __( 'Gravity Forms', 'referrertracker' ),
+		'cf7'          => __( 'Contact Form 7', 'referrertracker' ),
 	);
 
 	echo '<h2 class="nav-tab-wrapper">';
@@ -264,41 +268,41 @@ function referrertracker_render_tab_content( $tab ) {
 }
 
 function referrertracker_render_wpforms_instructions() {
-	echo '<h2>WPForms</h2>';
-	echo '<p>WPForms sometimes places your "Field CSS Class" on a wrapper element instead of the actual <code>&lt;input&gt;</code>. This plugin includes a bridge that copies <code>js-rt-*</code> classes to the input so ReferrerTracker can fill the values.</p>';
+	echo '<h2>' . esc_html__( 'WPForms', 'referrertracker' ) . '</h2>';
+	echo '<p>' . wp_kses_post( __( 'WPForms sometimes places your "Field CSS Class" on a wrapper element instead of the actual <code>&lt;input&gt;</code>. This plugin includes a bridge that copies <code>js-rt-*</code> classes to the input so ReferrerTracker can fill the values.', 'referrertracker' ) ) . '</p>';
 
 	echo '<ol>';
-	echo '<li>Add Hidden Fields for the parameters you want to capture</li>';
-	echo '<li>For each hidden field, set <strong>CSS Class</strong> to one of:</li>';
+	echo '<li>' . esc_html__( 'Add Hidden Fields for the parameters you want to capture', 'referrertracker' ) . '</li>';
+	echo '<li>' . wp_kses_post( __( 'For each hidden field, set <strong>CSS Class</strong> to one of:', 'referrertracker' ) ) . '</li>';
 	echo '</ol>';
 
 	echo '<p><code>js-rt-source</code>, <code>js-rt-medium</code>, <code>js-rt-campaign</code>, <code>js-rt-content</code>, <code>js-rt-term</code>, <code>js-rt-referrer</code>, <code>js-rt-landing-page</code>, <code>js-rt-gclid</code>, <code>js-rt-fbclid</code>, <code>js-rt-msclkid</code>, <code>js-rt-ttclid</code>, <code>js-rt-li-fat-id</code>, <code>js-rt-twclid</code>, <code>js-rt-epik</code>, <code>js-rt-rdt-cid</code></p>';
 
-	echo '<p>Tip: Hidden fields can also be filled by ID (recommended). Use IDs like <code>rt-source</code> or <code>rt-gclid</code>.</p>';
+	echo '<p>' . wp_kses_post( __( 'Tip: Hidden fields can also be filled by ID (recommended). Use IDs like <code>rt-source</code> or <code>rt-gclid</code>.', 'referrertracker' ) ) . '</p>';
 }
 
 function referrertracker_render_gravityforms_instructions() {
-	echo '<h2>Gravity Forms</h2>';
-	echo '<p>Gravity Forms supports dynamic population. This plugin reads ReferrerTracker cookies and provides values when a field is configured to populate dynamically.</p>';
+	echo '<h2>' . esc_html__( 'Gravity Forms', 'referrertracker' ) . '</h2>';
+	echo '<p>' . esc_html__( 'Gravity Forms supports dynamic population. This plugin reads ReferrerTracker cookies and provides values when a field is configured to populate dynamically.', 'referrertracker' ) . '</p>';
 
 	echo '<ol>';
-	echo '<li>Add Hidden Fields for the parameters you want to capture</li>';
-	echo '<li>Enable <strong>Allow field to be populated dynamically</strong></li>';
-	echo '<li>Set <strong>Parameter Name</strong> to one of:</li>';
+	echo '<li>' . esc_html__( 'Add Hidden Fields for the parameters you want to capture', 'referrertracker' ) . '</li>';
+	echo '<li>' . wp_kses_post( __( 'Enable <strong>Allow field to be populated dynamically</strong>', 'referrertracker' ) ) . '</li>';
+	echo '<li>' . wp_kses_post( __( 'Set <strong>Parameter Name</strong> to one of:', 'referrertracker' ) ) . '</li>';
 	echo '</ol>';
 
 	echo '<p><code>rt_source</code>, <code>rt_medium</code>, <code>rt_campaign</code>, <code>rt_content</code>, <code>rt_term</code>, <code>rt_referrer</code>, <code>rt_landing_page</code>, <code>rt_gclid</code>, <code>rt_fbclid</code>, <code>rt_msclkid</code>, <code>rt_ttclid</code>, <code>rt_li_fat_id</code>, <code>rt_twclid</code>, <code>rt_epik</code>, <code>rt_rdt_cid</code></p>';
 
-	echo '<p>You can also use class-style names and the plugin will map them (example: <code>js-rt-referrer</code>).</p>';
+	echo '<p>' . wp_kses_post( __( 'You can also use class-style names and the plugin will map them (example: <code>js-rt-referrer</code>).', 'referrertracker' ) ) . '</p>';
 }
 
 function referrertracker_render_cf7_instructions() {
-	echo '<h2>Contact Form 7</h2>';
-	echo '<p>Contact Form 7 typically renders the class on the input itself, so ReferrerTracker can fill values without additional changes.</p>';
+	echo '<h2>' . esc_html__( 'Contact Form 7', 'referrertracker' ) . '</h2>';
+	echo '<p>' . esc_html__( 'Contact Form 7 typically renders the class on the input itself, so ReferrerTracker can fill values without additional changes.', 'referrertracker' ) . '</p>';
 
-	echo '<p>Recommended approach:</p>';
+	echo '<p>' . esc_html__( 'Recommended approach:', 'referrertracker' ) . '</p>';
 	echo '<ol>';
-	echo '<li>Add hidden fields and set their IDs to <code>rt-source</code>, <code>rt-medium</code>, <code>rt-campaign</code>, etc.</li>';
-	echo '<li>Alternatively use names like <code>rt_source</code> or classes like <code>js-rt-source</code></li>';
+	echo '<li>' . wp_kses_post( __( 'Add hidden fields and set their IDs to <code>rt-source</code>, <code>rt-medium</code>, <code>rt-campaign</code>, etc.', 'referrertracker' ) ) . '</li>';
+	echo '<li>' . wp_kses_post( __( 'Alternatively use names like <code>rt_source</code> or classes like <code>js-rt-source</code>', 'referrertracker' ) ) . '</li>';
 	echo '</ol>';
 }
