@@ -106,6 +106,7 @@ Typical flow:
 
 = 0.1.3 =
 * Add Settings link in plugin list and redirect to settings after activation.
+* Add tabbed instructions for supported form plugins on the settings page.
 
 = 0.1.2 =
 * Fix GitHub update package URL to avoid zipball download issues.
