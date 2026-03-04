@@ -31,7 +31,8 @@ function referrertracker_maybe_redirect_to_settings() {
 		return;
 	}
 
-	if ( isset( $_GET['activate-multi'] ) ) {
+	$activate_multi = filter_input( INPUT_GET, 'activate-multi', FILTER_UNSAFE_RAW );
+	if ( null !== $activate_multi ) {
 		return;
 	}
 
@@ -199,7 +200,8 @@ function referrertracker_render_settings_page() {
 }
 
 function referrertracker_get_admin_tab() {
-	$tab = isset( $_GET['tab'] ) ? sanitize_key( (string) $_GET['tab'] ) : 'settings';
+	$tab_raw = filter_input( INPUT_GET, 'tab', FILTER_UNSAFE_RAW );
+	$tab     = is_string( $tab_raw ) ? sanitize_key( $tab_raw ) : 'settings';
 	$allowed = array( 'settings', 'wpforms', 'gravityforms', 'cf7' );
 	if ( ! in_array( $tab, $allowed, true ) ) {
 		$tab = 'settings';

@@ -40,6 +40,7 @@ jobs:
 
           rsync -a --delete \
             --exclude='.git/' \
+            --exclude='.*' \
             --exclude='.github/' \
             --exclude='.gitignore' \
             --exclude='referrertracker-*.zip' \

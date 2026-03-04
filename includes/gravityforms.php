@@ -22,16 +22,16 @@ function referrertracker_gform_field_value( $value, $field, $name ) {
 		return $value;
 	}
 
-	if ( empty( $_COOKIE[ $cookie_name ] ) ) {
+	if ( ! isset( $_COOKIE[ $cookie_name ] ) ) {
 		return $value;
 	}
 
-	$raw = $_COOKIE[ $cookie_name ];
+	$raw = wp_unslash( $_COOKIE[ $cookie_name ] );
 	if ( is_array( $raw ) ) {
 		return $value;
 	}
 
-	return sanitize_text_field( wp_unslash( (string) $raw ) );
+	return sanitize_text_field( (string) $raw );
 }
 
 function referrertracker_map_gravity_parameter_to_cookie_name( $parameter_name ) {
