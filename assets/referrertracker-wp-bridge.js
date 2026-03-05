@@ -10,6 +10,40 @@
     return classes;
   }
 
+  function syncRtValues(root) {
+    var scope = root && root.querySelectorAll ? root : document;
+    var inputs = scope.querySelectorAll('input[type="hidden"][class*="js-rt-"]');
+
+    for (var i = 0; i < inputs.length; i++) {
+      var input = inputs[i];
+      var attrValue = input.getAttribute('value');
+      if (attrValue !== null && attrValue !== '' && input.value !== attrValue) {
+        input.value = attrValue;
+      }
+
+      if (input.value !== '' && input.getAttribute('value') !== input.value) {
+        input.setAttribute('value', input.value);
+      }
+
+      try {
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      } catch (e) {
+      }
+    }
+  }
+
+  function bindSubmitSync() {
+    document.addEventListener(
+      'submit',
+      function (e) {
+        if (!e || !e.target || !e.target.querySelectorAll) return;
+        syncRtValues(e.target);
+      },
+      true
+    );
+  }
+
   function applyRtClasses(root) {
     var scope = root && root.querySelectorAll ? root : document;
     var nodes = scope.querySelectorAll('[class*="js-rt-"]');
@@ -35,6 +69,8 @@
         }
       }
     }
+
+    syncRtValues(scope);
   }
 
   function startObserver() {
@@ -56,5 +92,6 @@
   window.addEventListener('DOMContentLoaded', function () {
     applyRtClasses(document);
     startObserver();
+    bindSubmitSync();
   });
 })();
