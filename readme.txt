@@ -4,7 +4,7 @@ Tags: analytics, tracking, utm, wpforms, contact-form-7
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 0.1.9
+Stable tag: 0.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -103,6 +103,11 @@ Typical flow:
 3. The repository GitHub Action will automatically attach a ZIP asset with the correct plugin folder structure.
 
 == Changelog ==
+
+= 0.2.0 =
+* Bridge reads localStorage first (then sessionStorage, then cookies) when populating form fields.
+* Fill all supported fields by ID, name, and class from storage on page load, mutations, and before submit.
+* Intercept submit button clicks for AJAX forms.
 
 = 0.1.9 =
 * Improve WPForms compatibility: ensure populated hidden fields are submitted/saved.
