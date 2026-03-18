@@ -79,9 +79,9 @@ function referrertracker_enqueue_scripts() {
 	$debug = ! empty( $options['debug'] );
 
 	$config = array(
-		'apiKey'         => $api_key,
-		'cookieDuration' => $duration,
-		'debug'          => $debug,
+		'apiKey'          => $api_key,
+		'cookieExpireDays' => $duration,
+		'debug'           => $debug,
 	);
 
 	$inline = "window.addEventListener('DOMContentLoaded', function () {\n" .

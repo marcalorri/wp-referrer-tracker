@@ -4,7 +4,7 @@ Tags: analytics, tracking, utm, wpforms, contact-form-7
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 0.2.0
+Stable tag: 0.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -103,6 +103,11 @@ Typical flow:
 3. The repository GitHub Action will automatically attach a ZIP asset with the correct plugin folder structure.
 
 == Changelog ==
+
+= 0.2.1 =
+* Fix bridge to parse new localStorage JSON format with expiry ({v, e}) from updated core script.
+* Fix config key: pass cookieExpireDays (instead of cookieDuration) so the admin setting is respected.
+* Ship updated referrer-tracker.min.js with localStorage-first reads.
 
 = 0.2.0 =
 * Bridge reads localStorage first (then sessionStorage, then cookies) when populating form fields.

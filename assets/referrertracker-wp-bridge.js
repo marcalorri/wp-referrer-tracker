@@ -19,11 +19,34 @@
     { key: 'rdt_cid',      id: 'rt-rdt-cid',      name: 'rt_rdt_cid',      cls: 'js-rt-rdt-cid' }
   ];
 
+  function parseLocalStorageValue(raw) {
+    if (!raw) return '';
+    try {
+      var parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object' && 'v' in parsed) {
+        if (parsed.e && parsed.e > 0 && Date.now() > parsed.e) {
+          return null;
+        }
+        return parsed.v || '';
+      }
+      return raw;
+    } catch (e) {
+      return raw;
+    }
+  }
+
   function getFromStorage(key) {
     var storageKey = STORAGE_PREFIX + key;
     try {
-      var val = localStorage.getItem(storageKey);
-      if (val) return val;
+      var raw = localStorage.getItem(storageKey);
+      if (raw) {
+        var val = parseLocalStorageValue(raw);
+        if (val === null) {
+          localStorage.removeItem(storageKey);
+        } else if (val) {
+          return val;
+        }
+      }
     } catch (e) {}
     try {
       var val2 = sessionStorage.getItem(storageKey);
