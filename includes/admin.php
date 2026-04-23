@@ -192,7 +192,6 @@ function referrertracker_render_settings_page() {
 
 	referrertracker_render_general_instructions();
 
-	echo '<h2>' . esc_html__( 'Settings', 'referrertracker' ) . '</h2>';
 	echo '<form action="options.php" method="post">';
 	settings_fields( 'referrertracker' );
 	do_settings_sections( 'referrertracker' );
@@ -217,22 +216,22 @@ function referrertracker_get_admin_tab() {
 
 function referrertracker_render_general_instructions() {
 	$dashboard_url = 'https://www.referrertracker.com/dashboard';
-	$docs_url = 'https://www.referrertracker.com/es/docs';
+	$docs_url = 'https://docs.referrertracker.com/docs/intro';
 	$implementation_url = 'https://www.referrertracker.com/es/soporte/implementacion';
 
 	$dashboard_link = '<a href="' . esc_url( $dashboard_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $dashboard_url ) . '</a>';
 	$docs_link = '<a href="' . esc_url( $docs_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $docs_url ) . '</a>';
 	$implementation_link = '<a href="' . esc_url( $implementation_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $implementation_url ) . '</a>';
 
-	echo '<div class="notice notice-info" style="padding: 12px 12px 8px;">';
-	echo '<p><strong>' . esc_html__( 'Quick setup', 'referrertracker' ) . '</strong></p>';
+	echo '<details open class="notice notice-info" style="padding: 12px 12px 8px; cursor: default;">';
+	echo '<summary style="cursor: pointer; font-weight: 600; list-style: revert; padding: 4px 0;">' . esc_html__( 'Quick setup', 'referrertracker' ) . '</summary>';
 	echo '<ol style="margin-top: 8px;">';
 	echo '<li>' . esc_html__( 'Get your API Key in your ReferrerTracker dashboard:', 'referrertracker' ) . ' ' . $dashboard_link . '</li>';
 	echo '<li>' . esc_html__( 'Paste it in the Settings section below and click Save', 'referrertracker' ) . '</li>';
 	echo '<li>' . esc_html__( 'Add hidden fields to your forms to capture the parameters you need (see each form tab)', 'referrertracker' ) . '</li>';
 	echo '</ol>';
 	echo '<p style="margin-top: 8px;">' . esc_html__( 'Documentation:', 'referrertracker' ) . ' ' . $docs_link . '<br />' . esc_html__( 'Implementation guide:', 'referrertracker' ) . ' ' . $implementation_link . '</p>';
-	echo '</div>';
+	echo '</details>';
 }
 
 function referrertracker_render_tabs( $active_tab ) {
@@ -287,6 +286,29 @@ function referrertracker_render_tab_content( $tab ) {
 	}
 }
 
+function referrertracker_render_fields_table( $columns, $rows ) {
+	echo '<table class="widefat striped" style="max-width: 700px; margin: 12px 0;">';
+	echo '<thead><tr>';
+	foreach ( $columns as $col ) {
+		echo '<th style="padding: 8px 12px;">' . esc_html( $col ) . '</th>';
+	}
+	echo '</tr></thead><tbody>';
+	foreach ( $rows as $row ) {
+		echo '<tr>';
+		$first = true;
+		foreach ( $row as $cell ) {
+			if ( $first ) {
+				echo '<td style="padding: 6px 12px;">' . esc_html( $cell ) . '</td>';
+				$first = false;
+			} else {
+				echo '<td style="padding: 6px 12px;"><code>' . esc_html( $cell ) . '</code></td>';
+			}
+		}
+		echo '</tr>';
+	}
+	echo '</tbody></table>';
+}
+
 function referrertracker_render_wpforms_instructions() {
 	echo '<h2>' . esc_html__( 'WPForms', 'referrertracker' ) . '</h2>';
 	echo '<p>' . wp_kses_post( __( 'WPForms sometimes places your "Field CSS Class" on a wrapper element instead of the actual <code>&lt;input&gt;</code>. This plugin includes a bridge that copies <code>js-rt-*</code> classes to the input so ReferrerTracker can fill the values.', 'referrertracker' ) ) . '</p>';
@@ -296,7 +318,26 @@ function referrertracker_render_wpforms_instructions() {
 	echo '<li>' . wp_kses_post( __( 'For each hidden field, set <strong>CSS Class</strong> to one of:', 'referrertracker' ) ) . '</li>';
 	echo '</ol>';
 
-	echo '<p><code>js-rt-source</code>, <code>js-rt-medium</code>, <code>js-rt-campaign</code>, <code>js-rt-content</code>, <code>js-rt-term</code>, <code>js-rt-referrer</code>, <code>js-rt-landing-page</code>, <code>js-rt-gclid</code>, <code>js-rt-fbclid</code>, <code>js-rt-msclkid</code>, <code>js-rt-ttclid</code>, <code>js-rt-li-fat-id</code>, <code>js-rt-twclid</code>, <code>js-rt-epik</code>, <code>js-rt-rdt-cid</code></p>';
+	referrertracker_render_fields_table(
+		array( __( 'Parameter', 'referrertracker' ), __( 'CSS Class', 'referrertracker' ) ),
+		array(
+			array( 'Source',             'js-rt-source' ),
+			array( 'Medium',             'js-rt-medium' ),
+			array( 'Campaign',           'js-rt-campaign' ),
+			array( 'Content',            'js-rt-content' ),
+			array( 'Term',               'js-rt-term' ),
+			array( 'Referrer',           'js-rt-referrer' ),
+			array( 'Landing Page',       'js-rt-landing-page' ),
+			array( 'Google Click ID',    'js-rt-gclid' ),
+			array( 'Facebook Click ID',  'js-rt-fbclid' ),
+			array( 'Microsoft Click ID', 'js-rt-msclkid' ),
+			array( 'TikTok Click ID',    'js-rt-ttclid' ),
+			array( 'LinkedIn Click ID',  'js-rt-li-fat-id' ),
+			array( 'Twitter Click ID',   'js-rt-twclid' ),
+			array( 'Pinterest Click ID', 'js-rt-epik' ),
+			array( 'Reddit Click ID',    'js-rt-rdt-cid' ),
+		)
+	);
 
 	echo '<p>' . wp_kses_post( __( 'Note: WPForms generates dynamic IDs, so using the CSS classes (<code>js-rt-*</code>) is the recommended approach.', 'referrertracker' ) ) . '</p>';
 
@@ -317,7 +358,20 @@ function referrertracker_render_gravityforms_instructions() {
 	echo '<li>' . esc_html__( 'Repeat for each tracking field you need', 'referrertracker' ) . '</li>';
 	echo '</ol>';
 
-	echo '<pre style="white-space: pre-wrap;">' . esc_html( "Recommended fields:\n- rt_source (CSS Class: js-rt-source)\n- rt_medium (CSS Class: js-rt-medium)\n- rt_campaign (CSS Class: js-rt-campaign)\n- rt_gclid (CSS Class: js-rt-gclid)\n- rt_fbclid (CSS Class: js-rt-fbclid)\n- rt_landing_page (CSS Class: js-rt-landing_page)\n- rt_referrer (CSS Class: js-rt-referrer)" ) . '</pre>';
+	referrertracker_render_fields_table(
+		array( __( 'Parameter', 'referrertracker' ), __( 'Field Name', 'referrertracker' ), __( 'CSS Class', 'referrertracker' ) ),
+		array(
+			array( 'Source',             'rt_source',       'js-rt-source' ),
+			array( 'Medium',             'rt_medium',       'js-rt-medium' ),
+			array( 'Campaign',           'rt_campaign',     'js-rt-campaign' ),
+			array( 'Content',            'rt_content',      'js-rt-content' ),
+			array( 'Term',               'rt_term',         'js-rt-term' ),
+			array( 'Referrer',           'rt_referrer',     'js-rt-referrer' ),
+			array( 'Landing Page',       'rt_landing_page', 'js-rt-landing-page' ),
+			array( 'Google Click ID',    'rt_gclid',        'js-rt-gclid' ),
+			array( 'Facebook Click ID',  'rt_fbclid',       'js-rt-fbclid' ),
+		)
+	);
 
 	echo '<h3>' . esc_html__( 'Alternative: gform_pre_render', 'referrertracker' ) . '</h3>';
 	echo '<p>' . esc_html__( 'You can also add fields dynamically with PHP:', 'referrertracker' ) . '</p>';
@@ -330,11 +384,34 @@ function referrertracker_render_cf7_instructions() {
 
 	echo '<h3>' . esc_html__( 'Step 1: Add hidden fields to the form', 'referrertracker' ) . '</h3>';
 	echo '<p>' . esc_html__( 'Edit your Contact Form 7 form and paste these hidden fields:', 'referrertracker' ) . '</p>';
-	echo '<pre style="white-space: pre-wrap;">' . esc_html( '[hidden rt_source id:rt_source] [hidden rt_medium id:rt_medium] [hidden rt_campaign id:rt_campaign] [hidden rt_content id:rt_content] [hidden rt_term id:rt_term] [hidden rt_gclid id:rt_gclid] [hidden rt_fbclid id:rt_fbclid] [hidden rt_landing_page id:rt_landing_page] [hidden rt_referrer id:rt_referrer]' ) . '</pre>';
+	referrertracker_render_fields_table(
+		array( __( 'Parameter', 'referrertracker' ), __( 'Shortcode', 'referrertracker' ) ),
+		array(
+			array( 'Source',             '[hidden rt_source id:rt_source]' ),
+			array( 'Medium',             '[hidden rt_medium id:rt_medium]' ),
+			array( 'Campaign',           '[hidden rt_campaign id:rt_campaign]' ),
+			array( 'Content',            '[hidden rt_content id:rt_content]' ),
+			array( 'Term',               '[hidden rt_term id:rt_term]' ),
+			array( 'Referrer',           '[hidden rt_referrer id:rt_referrer]' ),
+			array( 'Landing Page',       '[hidden rt_landing_page id:rt_landing_page]' ),
+			array( 'Google Click ID',    '[hidden rt_gclid id:rt_gclid]' ),
+			array( 'Facebook Click ID',  '[hidden rt_fbclid id:rt_fbclid]' ),
+		)
+	);
 
 	echo '<h3>' . esc_html__( 'Step 2: Configure the notification email', 'referrertracker' ) . '</h3>';
 	echo '<p>' . esc_html__( 'In the "Mail" tab, add these tags to include tracking data in the email:', 'referrertracker' ) . '</p>';
-	echo '<pre style="white-space: pre-wrap;">' . esc_html( '--- Tracking Data --- Source: [rt_source] Medium: [rt_medium] Campaign: [rt_campaign] Landing Page: [rt_landing_page] Google Click ID: [rt_gclid] Facebook Click ID: [rt_fbclid]' ) . '</pre>';
+	referrertracker_render_fields_table(
+		array( __( 'Parameter', 'referrertracker' ), __( 'Mail Tag', 'referrertracker' ) ),
+		array(
+			array( 'Source',             '[rt_source]' ),
+			array( 'Medium',             '[rt_medium]' ),
+			array( 'Campaign',           '[rt_campaign]' ),
+			array( 'Landing Page',       '[rt_landing_page]' ),
+			array( 'Google Click ID',    '[rt_gclid]' ),
+			array( 'Facebook Click ID',  '[rt_fbclid]' ),
+		)
+	);
 
 	echo '<p>' . wp_kses_post( __( 'Done! ReferrerTracker will detect fields by their ID (prefix <code>rt_</code>) and fill them automatically.', 'referrertracker' ) ) . '</p>';
 }
@@ -352,7 +429,20 @@ function referrertracker_render_elementor_instructions() {
 	echo '<li>' . esc_html__( 'Repeat for each tracking field', 'referrertracker' ) . '</li>';
 	echo '</ol>';
 
-	echo '<pre style="white-space: pre-wrap;">' . esc_html( "Fields to create in Elementor Forms:\n┌─────────────────┬──────────────────┐\n│ Type            │ ID               │\n├─────────────────┼──────────────────┤\n│ Hidden          │ rt_source         │\n│ Hidden          │ rt_medium         │\n│ Hidden          │ rt_campaign       │\n│ Hidden          │ rt_content        │\n│ Hidden          │ rt_term           │\n│ Hidden          │ rt_gclid          │\n│ Hidden          │ rt_fbclid         │\n│ Hidden          │ rt_landing_page   │\n│ Hidden          │ rt_referrer       │\n└─────────────────┴──────────────────┘" ) . '</pre>';
+	referrertracker_render_fields_table(
+		array( __( 'Parameter', 'referrertracker' ), __( 'Type', 'referrertracker' ), __( 'ID', 'referrertracker' ) ),
+		array(
+			array( 'Source',             'Hidden', 'rt_source' ),
+			array( 'Medium',             'Hidden', 'rt_medium' ),
+			array( 'Campaign',           'Hidden', 'rt_campaign' ),
+			array( 'Content',            'Hidden', 'rt_content' ),
+			array( 'Term',               'Hidden', 'rt_term' ),
+			array( 'Referrer',           'Hidden', 'rt_referrer' ),
+			array( 'Landing Page',       'Hidden', 'rt_landing_page' ),
+			array( 'Google Click ID',    'Hidden', 'rt_gclid' ),
+			array( 'Facebook Click ID',  'Hidden', 'rt_fbclid' ),
+		)
+	);
 
 	echo '<h3>' . esc_html__( 'Step 2: Verify IDs are applied correctly', 'referrertracker' ) . '</h3>';
 	echo '<p>' . esc_html__( 'Elementor sometimes modifies IDs. Add this script to ensure compatibility:', 'referrertracker' ) . '</p>';
@@ -386,7 +476,19 @@ function referrertracker_render_fluentforms_instructions() {
 	echo '<h2>' . esc_html__( 'Fluent Forms', 'referrertracker' ) . '</h2>';
 	echo '<p>' . esc_html__( 'Fluent Forms is a lightweight and fast forms plugin. You can add tracking hidden fields using shortcodes.', 'referrertracker' ) . '</p>';
 
-	echo '<pre style="white-space: pre-wrap;">' . esc_html( "// Fluent Forms - Add hidden fields via shortcode\n// Use this shortcode in your form:\n[fluentform_hidden name=\"rt_source\" id=\"rt_source\"] [fluentform_hidden name=\"rt_medium\" id=\"rt_medium\"] [fluentform_hidden name=\"rt_campaign\" id=\"rt_campaign\"] [fluentform_hidden name=\"rt_gclid\" id=\"rt_gclid\"] [fluentform_hidden name=\"rt_fbclid\" id=\"rt_fbclid\"]" ) . '</pre>';
+	echo '<p>' . esc_html__( 'Add hidden fields to your form with the following configuration:', 'referrertracker' ) . '</p>';
+	referrertracker_render_fields_table(
+		array( __( 'Parameter', 'referrertracker' ), __( 'name', 'referrertracker' ), __( 'id', 'referrertracker' ) ),
+		array(
+			array( 'Source',             'rt_source',       'rt_source' ),
+			array( 'Medium',             'rt_medium',       'rt_medium' ),
+			array( 'Campaign',           'rt_campaign',     'rt_campaign' ),
+			array( 'Referrer',           'rt_referrer',     'rt_referrer' ),
+			array( 'Landing Page',       'rt_landing_page', 'rt_landing_page' ),
+			array( 'Google Click ID',    'rt_gclid',        'rt_gclid' ),
+			array( 'Facebook Click ID',  'rt_fbclid',       'rt_fbclid' ),
+		)
+	);
 }
 
 function referrertracker_render_ninjaforms_instructions() {
@@ -399,4 +501,19 @@ function referrertracker_render_ninjaforms_instructions() {
 	echo '<li>' . wp_kses_post( __( 'In <strong>Display</strong> → <strong>Custom CSS Classes</strong>, add: <code>js-rt-source</code>', 'referrertracker' ) ) . '</li>';
 	echo '<li>' . esc_html__( 'Repeat for each tracking field you need', 'referrertracker' ) . '</li>';
 	echo '</ol>';
+
+	referrertracker_render_fields_table(
+		array( __( 'Parameter', 'referrertracker' ), __( 'Field Key', 'referrertracker' ), __( 'CSS Class', 'referrertracker' ) ),
+		array(
+			array( 'Source',             'rt_source',       'js-rt-source' ),
+			array( 'Medium',             'rt_medium',       'js-rt-medium' ),
+			array( 'Campaign',           'rt_campaign',     'js-rt-campaign' ),
+			array( 'Content',            'rt_content',      'js-rt-content' ),
+			array( 'Term',               'rt_term',         'js-rt-term' ),
+			array( 'Referrer',           'rt_referrer',     'js-rt-referrer' ),
+			array( 'Landing Page',       'rt_landing_page', 'js-rt-landing-page' ),
+			array( 'Google Click ID',    'rt_gclid',        'js-rt-gclid' ),
+			array( 'Facebook Click ID',  'rt_fbclid',       'js-rt-fbclid' ),
+		)
+	);
 }

@@ -4,7 +4,7 @@ Tags: analytics, tracking, utm, wpforms, contact-form-7
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 0.3.0
+Stable tag: 0.3.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -103,6 +103,12 @@ Typical flow:
 3. The repository GitHub Action will automatically attach a ZIP asset with the correct plugin folder structure.
 
 == Changelog ==
+
+= 0.3.1 =
+* Admin: Quick setup section is now collapsible.
+* Admin: removed duplicate "Settings" heading.
+* Admin: form field references displayed as clean HTML tables for easy copy-paste.
+* Updated Spanish translations.
 
 = 0.3.0 =
 * Updated core script: localStorage-only, no more cookies.

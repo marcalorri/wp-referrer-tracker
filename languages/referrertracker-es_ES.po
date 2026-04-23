@@ -194,3 +194,36 @@ msgstr "En <strong>Administration</strong> → <strong>Field Key</strong>, escri
 
 msgid "In <strong>Display</strong> → <strong>Custom CSS Classes</strong>, add: <code>js-rt-source</code>"
 msgstr "En <strong>Display</strong> → <strong>Custom CSS Classes</strong>, añade: <code>js-rt-source</code>"
+
+msgid "Parameter"
+msgstr "Parámetro"
+
+msgid "CSS Class"
+msgstr "Clase CSS"
+
+msgid "Field Name"
+msgstr "Nombre del campo"
+
+msgid "Shortcode"
+msgstr "Shortcode"
+
+msgid "Mail Tag"
+msgstr "Etiqueta de correo"
+
+msgid "Type"
+msgstr "Tipo"
+
+msgid "ID"
+msgstr "ID"
+
+msgid "Field Key"
+msgstr "Clave del campo"
+
+msgid "name"
+msgstr "name"
+
+msgid "id"
+msgstr "id"
+
+msgid "Add hidden fields to your form with the following configuration:"
+msgstr "Añade campos ocultos a tu formulario con la siguiente configuración:"
