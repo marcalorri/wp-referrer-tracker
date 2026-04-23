@@ -97,7 +97,7 @@ function referrertracker_register_settings() {
 
 	add_settings_field(
 		'referrertracker_cookie_duration',
-		__( 'Cookie Duration (days)', 'referrertracker' ),
+		__( 'Storage Duration (days)', 'referrertracker' ),
 		'referrertracker_field_cookie_duration',
 		'referrertracker',
 		'referrertracker_main'

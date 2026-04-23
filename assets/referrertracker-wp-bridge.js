@@ -52,16 +52,6 @@
       var val2 = sessionStorage.getItem(storageKey);
       if (val2) return val2;
     } catch (e) {}
-    try {
-      var cookies = document.cookie.split(';');
-      for (var i = 0; i < cookies.length; i++) {
-        var c = cookies[i];
-        while (c.charAt(0) === ' ') c = c.substring(1);
-        if (c.indexOf(storageKey + '=') === 0) {
-          return decodeURIComponent(c.substring(storageKey.length + 1));
-        }
-      }
-    } catch (e) {}
     return '';
   }
 

@@ -4,7 +4,7 @@ Tags: analytics, tracking, utm, wpforms, contact-form-7
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 0.2.1
+Stable tag: 0.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -103,6 +103,14 @@ Typical flow:
 3. The repository GitHub Action will automatically attach a ZIP asset with the correct plugin folder structure.
 
 == Changelog ==
+
+= 0.3.0 =
+* Updated core script: localStorage-only, no more cookies.
+* Bridge: removed cookie fallback from storage reader.
+* Config: pass storageExpireDays instead of cookieExpireDays.
+* Admin: renamed "Cookie Duration" to "Storage Duration".
+* Removed gravityforms.php server-side cookie integration (dead code).
+* Gravity Forms fields are now populated client-side by the bridge like all other form plugins.
 
 = 0.2.1 =
 * Fix bridge to parse new localStorage JSON format with expiry ({v, e}) from updated core script.

@@ -7,14 +7,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Plugin Name: ReferrerTracker
  * Description: Adds ReferrerTracker tracking script and helps populate tracking fields in supported form plugins.
- * Version: 0.2.1
+ * Version: 0.3.0
  * Author: ReferrerTracker
  * License: GPLv2 or later
  * Text Domain: referrertracker
  * Domain Path: /languages
  */
 
-define( 'REFERRERTRACKER_VERSION', '0.2.1' );
+define( 'REFERRERTRACKER_VERSION', '0.3.0' );
 define( 'REFERRERTRACKER_PLUGIN_FILE', __FILE__ );
 define( 'REFERRERTRACKER_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'REFERRERTRACKER_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -38,11 +38,9 @@ function referrertracker_load_textdomain() {
 require_once REFERRERTRACKER_PLUGIN_DIR . 'includes/frontend.php';
 require_once REFERRERTRACKER_PLUGIN_DIR . 'includes/admin.php';
 require_once REFERRERTRACKER_PLUGIN_DIR . 'includes/updater.php';
-require_once REFERRERTRACKER_PLUGIN_DIR . 'includes/gravityforms.php';
 
 referrertracker_frontend_register();
 referrertracker_admin_register();
 referrertracker_updater_register();
-referrertracker_gravityforms_register();
 
 register_activation_hook( __FILE__, 'referrertracker_activation' );

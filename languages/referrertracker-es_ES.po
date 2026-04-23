@@ -21,8 +21,8 @@ msgstr "ReferrerTracker"
 msgid "API Key"
 msgstr "Clave API"
 
-msgid "Cookie Duration (days)"
-msgstr "Duración de la cookie (días)"
+msgid "Storage Duration (days)"
+msgstr "Duración del almacenamiento (días)"
 
 msgid "Debug"
 msgstr "Depuración"
