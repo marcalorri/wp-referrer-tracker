@@ -4,7 +4,7 @@ Tags: analytics, tracking, utm, wpforms, contact-form-7
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 0.3.2
+Stable tag: 0.3.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -103,6 +103,9 @@ Typical flow:
 3. The repository GitHub Action will automatically attach a ZIP asset with the correct plugin folder structure.
 
 == Changelog ==
+
+= 0.3.3 =
+* Renamed core script from referrer-tracker.min.js to rt.min.js to reduce ad-blocker false positives.
 
 = 0.3.2 =
 * Scripts: added data-cfasync, data-no-optimize, data-no-minify attributes to prevent caching/optimization plugins from breaking script execution.

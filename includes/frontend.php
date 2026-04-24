@@ -41,7 +41,7 @@ function referrertracker_enqueue_scripts() {
 		return;
 	}
 
-	$core_rel = 'assets/referrer-tracker.min.js';
+	$core_rel = 'assets/rt.min.js';
 	$core_path = REFERRERTRACKER_PLUGIN_DIR . $core_rel;
 	$core_url  = REFERRERTRACKER_PLUGIN_URL . $core_rel;
 
