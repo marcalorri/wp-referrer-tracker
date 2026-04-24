@@ -2,21 +2,21 @@
   var STORAGE_PREFIX = 'rt_';
 
   var TRACKING_FIELDS = [
-    { key: 'source',       id: 'rt-source',       name: 'rt_source',       cls: 'js-rt-source' },
-    { key: 'medium',       id: 'rt-medium',       name: 'rt_medium',       cls: 'js-rt-medium' },
-    { key: 'campaign',     id: 'rt-campaign',     name: 'rt_campaign',     cls: 'js-rt-campaign' },
-    { key: 'content',      id: 'rt-content',      name: 'rt_content',      cls: 'js-rt-content' },
-    { key: 'term',         id: 'rt-term',         name: 'rt_term',         cls: 'js-rt-term' },
-    { key: 'referrer',     id: 'rt-referrer',     name: 'rt_referrer',     cls: 'js-rt-referrer' },
-    { key: 'landing_page', id: 'rt-landing-page', name: 'rt_landing_page', cls: 'js-rt-landing-page' },
-    { key: 'gclid',        id: 'rt-gclid',        name: 'rt_gclid',        cls: 'js-rt-gclid' },
-    { key: 'fbclid',       id: 'rt-fbclid',       name: 'rt_fbclid',       cls: 'js-rt-fbclid' },
-    { key: 'msclkid',      id: 'rt-msclkid',      name: 'rt_msclkid',      cls: 'js-rt-msclkid' },
-    { key: 'ttclid',       id: 'rt-ttclid',       name: 'rt_ttclid',       cls: 'js-rt-ttclid' },
-    { key: 'li_fat_id',    id: 'rt-li-fat-id',    name: 'rt_li_fat_id',    cls: 'js-rt-li-fat-id' },
-    { key: 'twclid',       id: 'rt-twclid',       name: 'rt_twclid',       cls: 'js-rt-twclid' },
-    { key: 'epik',         id: 'rt-epik',         name: 'rt_epik',         cls: 'js-rt-epik' },
-    { key: 'rdt_cid',      id: 'rt-rdt-cid',      name: 'rt_rdt_cid',      cls: 'js-rt-rdt-cid' }
+    { key: 'source',       ids: ['rt-source',      'rt_source'],       name: 'rt_source',       cls: 'js-rt-source' },
+    { key: 'medium',       ids: ['rt-medium',      'rt_medium'],       name: 'rt_medium',       cls: 'js-rt-medium' },
+    { key: 'campaign',     ids: ['rt-campaign',    'rt_campaign'],     name: 'rt_campaign',     cls: 'js-rt-campaign' },
+    { key: 'content',      ids: ['rt-content',     'rt_content'],      name: 'rt_content',      cls: 'js-rt-content' },
+    { key: 'term',         ids: ['rt-term',        'rt_term'],         name: 'rt_term',         cls: 'js-rt-term' },
+    { key: 'referrer',     ids: ['rt-referrer',    'rt_referrer'],     name: 'rt_referrer',     cls: 'js-rt-referrer' },
+    { key: 'landing_page', ids: ['rt-landing-page','rt_landing_page'], name: 'rt_landing_page', cls: 'js-rt-landing-page' },
+    { key: 'gclid',        ids: ['rt-gclid',       'rt_gclid'],        name: 'rt_gclid',        cls: 'js-rt-gclid' },
+    { key: 'fbclid',       ids: ['rt-fbclid',      'rt_fbclid'],       name: 'rt_fbclid',       cls: 'js-rt-fbclid' },
+    { key: 'msclkid',      ids: ['rt-msclkid',     'rt_msclkid'],      name: 'rt_msclkid',      cls: 'js-rt-msclkid' },
+    { key: 'ttclid',       ids: ['rt-ttclid',      'rt_ttclid'],       name: 'rt_ttclid',       cls: 'js-rt-ttclid' },
+    { key: 'li_fat_id',    ids: ['rt-li-fat-id',   'rt_li_fat_id'],    name: 'rt_li_fat_id',    cls: 'js-rt-li-fat-id' },
+    { key: 'twclid',       ids: ['rt-twclid',      'rt_twclid'],       name: 'rt_twclid',       cls: 'js-rt-twclid' },
+    { key: 'epik',         ids: ['rt-epik',        'rt_epik'],         name: 'rt_epik',         cls: 'js-rt-epik' },
+    { key: 'rdt_cid',      ids: ['rt-rdt-cid',     'rt_rdt_cid'],      name: 'rt_rdt_cid',      cls: 'js-rt-rdt-cid' }
   ];
 
   function parseLocalStorageValue(raw) {
@@ -73,8 +73,10 @@
       var value = getFromStorage(field.key);
       if (!value) continue;
 
-      var el = root.getElementById ? root.getElementById(field.id) : document.getElementById(field.id);
-      if (el) setFieldValue(el, value);
+      for (var j = 0; j < field.ids.length; j++) {
+        var el = root.getElementById ? root.getElementById(field.ids[j]) : document.getElementById(field.ids[j]);
+        if (el) setFieldValue(el, value);
+      }
 
       var byName = root.querySelectorAll('input[name="' + field.name + '"]');
       for (var n = 0; n < byName.length; n++) {
@@ -204,7 +206,7 @@
     var interval = setInterval(function () {
       fillFieldsFromStorage(document);
       fills++;
-      if (fills >= 10) clearInterval(interval);
+      if (fills >= 20) clearInterval(interval);
     }, 500);
   });
 })();

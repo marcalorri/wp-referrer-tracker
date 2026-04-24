@@ -4,7 +4,7 @@ Tags: analytics, tracking, utm, wpforms, contact-form-7
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 0.3.1
+Stable tag: 0.3.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -103,6 +103,12 @@ Typical flow:
 3. The repository GitHub Action will automatically attach a ZIP asset with the correct plugin folder structure.
 
 == Changelog ==
+
+= 0.3.2 =
+* Scripts: added data-cfasync, data-no-optimize, data-no-minify attributes to prevent caching/optimization plugins from breaking script execution.
+* Scripts: removed unnecessary setTimeout delay from configure() call.
+* Bridge: extended periodic field fill from 5s to 10s for late-rendered forms.
+* Bridge: added underscore-format ID lookup (rt_source) alongside hyphen-format (rt-source) for broader field matching.
 
 = 0.3.1 =
 * Admin: Quick setup section is now collapsible.

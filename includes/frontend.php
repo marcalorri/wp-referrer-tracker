@@ -21,6 +21,16 @@ function referrertracker_get_options() {
 
 function referrertracker_frontend_register() {
 	add_action( 'wp_enqueue_scripts', 'referrertracker_enqueue_scripts', 5 );
+	add_filter( 'script_loader_tag', 'referrertracker_script_loader_tag', 10, 2 );
+}
+
+function referrertracker_script_loader_tag( $tag, $handle ) {
+	if ( 'referrertracker-core' !== $handle && 'referrertracker-bridge' !== $handle ) {
+		return $tag;
+	}
+
+	$attrs = ' data-cfasync="false" data-no-optimize="1" data-no-minify="1"';
+	return str_replace( ' src=', $attrs . ' src=', $tag );
 }
 
 function referrertracker_enqueue_scripts() {
@@ -85,10 +95,8 @@ function referrertracker_enqueue_scripts() {
 	);
 
 	$inline = "window.addEventListener('DOMContentLoaded', function () {\n" .
-		"  window.setTimeout(function () {\n" .
-		"    if (!window.ReferrerTracker || typeof window.ReferrerTracker.configure !== 'function') { return; }\n" .
-		"    window.ReferrerTracker.configure(" . wp_json_encode( $config ) . ");\n" .
-		"  }, 0);\n" .
+		"  if (!window.ReferrerTracker || typeof window.ReferrerTracker.configure !== 'function') { return; }\n" .
+		"  window.ReferrerTracker.configure(" . wp_json_encode( $config ) . ");\n" .
 		"});";
 
 	wp_add_inline_script( 'referrertracker-core', $inline, 'after' );
