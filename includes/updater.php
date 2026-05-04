@@ -260,7 +260,7 @@ class ReferrerTracker_GitHub_Updater {
 		}
 
 		if ( $download_url === '' ) {
-			$download_url = 'https://github.com/' . rawurlencode( $this->owner ) . '/' . rawurlencode( $this->repo ) . '/archive/refs/tags/' . rawurlencode( $tag ) . '.zip';
+			return null;
 		}
 
 		$release = array(

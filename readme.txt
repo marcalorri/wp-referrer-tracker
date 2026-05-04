@@ -4,7 +4,7 @@ Tags: analytics, tracking, utm, wpforms, contact-form-7
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 0.4.0
+Stable tag: 0.4.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -103,6 +103,10 @@ Typical flow:
 3. The repository GitHub Action will automatically attach a ZIP asset with the correct plugin folder structure.
 
 == Changelog ==
+
+= 0.4.1 =
+* Fix admin settings notice to validate the renamed core file `assets/rt.min.js`.
+* Fix GitHub updater to require a release ZIP asset instead of falling back to GitHub source archives that WordPress cannot install as plugins.
 
 = 0.4.0 =
 * Robust inline configure script with retry logic (100ms intervals, up to 5s) to survive WP Rocket Delay JS.

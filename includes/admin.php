@@ -172,9 +172,9 @@ function referrertracker_admin_notices() {
 		return;
 	}
 
-	$path = REFERRERTRACKER_PLUGIN_DIR . 'assets/referrer-tracker.min.js';
+	$path = REFERRERTRACKER_PLUGIN_DIR . 'assets/rt.min.js';
 	if ( ! file_exists( $path ) || filesize( $path ) < 10 ) {
-		$filename = 'assets/referrer-tracker.min.js';
+		$filename = 'assets/rt.min.js';
 		$message  = __( 'ReferrerTracker: the file', 'referrertracker' ) . ' <code>' . esc_html( $filename ) . '</code> ' . __( 'is missing or empty. Add the script file (downloaded from your ReferrerTracker dashboard) and update the plugin release on GitHub.', 'referrertracker' );
 		echo '<div class="notice notice-warning"><p>' . wp_kses_post( $message ) . '</p></div>';
 	}
