@@ -22,6 +22,7 @@ function referrertracker_get_options() {
 function referrertracker_frontend_register() {
 	add_action( 'wp_enqueue_scripts', 'referrertracker_enqueue_scripts', 5 );
 	add_filter( 'script_loader_tag', 'referrertracker_script_loader_tag', 10, 2 );
+	add_action( 'init', 'referrertracker_add_wp_rocket_exclusions' );
 }
 
 function referrertracker_script_loader_tag( $tag, $handle ) {
@@ -29,8 +30,38 @@ function referrertracker_script_loader_tag( $tag, $handle ) {
 		return $tag;
 	}
 
-	$attrs = ' data-cfasync="false" data-no-optimize="1" data-no-minify="1"';
+	$attrs = ' data-cfasync="false" data-no-optimize="1" data-no-minify="1" data-rocket-ignore';
 	return str_replace( ' src=', $attrs . ' src=', $tag );
+}
+
+function referrertracker_add_wp_rocket_exclusions() {
+	$exclude_patterns = array(
+		'referrertracker',
+		'rt.min.js',
+	);
+
+	foreach ( $exclude_patterns as $pattern ) {
+		add_filter( 'rocket_delay_js_exclusions', function ( $exclusions ) use ( $pattern ) {
+			if ( is_array( $exclusions ) && ! in_array( $pattern, $exclusions, true ) ) {
+				$exclusions[] = $pattern;
+			}
+			return $exclusions;
+		} );
+
+		add_filter( 'rocket_exclude_defer_js', function ( $exclusions ) use ( $pattern ) {
+			if ( is_array( $exclusions ) && ! in_array( $pattern, $exclusions, true ) ) {
+				$exclusions[] = $pattern;
+			}
+			return $exclusions;
+		} );
+
+		add_filter( 'rocket_exclude_js', function ( $exclusions ) use ( $pattern ) {
+			if ( is_array( $exclusions ) && ! in_array( $pattern, $exclusions, true ) ) {
+				$exclusions[] = $pattern;
+			}
+			return $exclusions;
+		} );
+	}
 }
 
 function referrertracker_enqueue_scripts() {
@@ -70,7 +101,7 @@ function referrertracker_enqueue_scripts() {
 	wp_enqueue_script(
 		'referrertracker-bridge',
 		$bridge_url,
-		array(),
+		array( 'referrertracker-core' ),
 		$bridge_ver,
 		false
 	);
@@ -94,10 +125,37 @@ function referrertracker_enqueue_scripts() {
 		'debug'            => $debug,
 	);
 
-	$inline = "window.addEventListener('DOMContentLoaded', function () {\n" .
-		"  if (!window.ReferrerTracker || typeof window.ReferrerTracker.configure !== 'function') { return; }\n" .
-		"  window.ReferrerTracker.configure(" . wp_json_encode( $config ) . ");\n" .
-		"});";
+	$config_json = wp_json_encode( $config );
+
+	$inline = "(function(){" .
+		"var c=" . $config_json . ";window.rtQueue=window.rtQueue||[];window.rtQueue.__config=c;" .
+		"var a=0;" .
+		"var m=50;" .
+		"function t(){" .
+		"if(window.ReferrerTracker&&typeof window.ReferrerTracker.configure==='function'){" .
+		"if(!window.rtQueue||!window.rtQueue.__configured){" .
+		"if(window.rtQueue)window.rtQueue.__configured=1;" .
+		"window.ReferrerTracker.configure(c);" .
+		"if(c.debug)console.log('[ReferrerTracker WP] configure() called via retry after '+(a*100)+'ms');" .
+		"}" .
+		"return;" .
+		"}" .
+		"a++;" .
+		"if(a>=m){" .
+		"try{" .
+		"var e=Date.now()+c.storageExpireDays*24*60*60*1000;" .
+		"localStorage.setItem('rt_source',JSON.stringify({v:'none',e:e}));" .
+		"localStorage.setItem('rt_medium',JSON.stringify({v:'direct',e:e}));" .
+		"sessionStorage.setItem('rt_source','none');" .
+		"sessionStorage.setItem('rt_medium','direct');" .
+		"if(c.debug)console.log('[ReferrerTracker WP] Core not available after '+(a*100)+'ms, wrote defaults to storage');" .
+		"}catch(x){}" .
+		"return;" .
+		"}" .
+		"setTimeout(t,100);" .
+		"}" .
+		"t();" .
+		"})();";
 
 	wp_add_inline_script( 'referrertracker-core', $inline, 'after' );
 }

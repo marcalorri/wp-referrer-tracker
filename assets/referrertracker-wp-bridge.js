@@ -66,12 +66,20 @@
     } catch (e) {}
   }
 
+  var DEFAULTS = { source: 'none', medium: 'direct' };
+
   function fillFieldsFromStorage(scope) {
     var root = scope && scope.querySelectorAll ? scope : document;
     for (var i = 0; i < TRACKING_FIELDS.length; i++) {
       var field = TRACKING_FIELDS[i];
       var value = getFromStorage(field.key);
-      if (!value) continue;
+      if (!value) {
+        if (DEFAULTS.hasOwnProperty(field.key)) {
+          value = DEFAULTS[field.key];
+        } else {
+          continue;
+        }
+      }
 
       for (var j = 0; j < field.ids.length; j++) {
         var el = root.getElementById ? root.getElementById(field.ids[j]) : document.getElementById(field.ids[j]);
@@ -124,11 +132,20 @@
     }
   }
 
+  function fillAllForms() {
+    var forms = document.querySelectorAll('form');
+    for (var i = 0; i < forms.length; i++) {
+      fillFieldsFromStorage(forms[i]);
+      syncRtValues(forms[i]);
+    }
+  }
+
   function bindSubmitSync() {
     document.addEventListener(
       'submit',
       function (e) {
         if (!e || !e.target || !e.target.querySelectorAll) return;
+        log('submit event on form', e.target);
         fillFieldsFromStorage(e.target);
         syncRtValues(e.target);
       },
@@ -143,12 +160,53 @@
         if (el.type !== 'submit' && !(el.tagName === 'BUTTON' && el.closest && el.closest('form'))) return;
         var form = el.closest ? el.closest('form') : null;
         if (form) {
+          log('click on submit/button for form', form);
           fillFieldsFromStorage(form);
           syncRtValues(form);
         }
       },
       true
     );
+
+    if (typeof jQuery !== 'undefined' && jQuery.fn) {
+      try {
+        jQuery(document).on('submit', 'form', function () {
+          fillFieldsFromStorage(this);
+          syncRtValues(this);
+        });
+      } catch (e) {}
+
+      try {
+        jQuery(document).ajaxComplete(function () {
+          setTimeout(fillAllForms, 50);
+        });
+      } catch (e) {}
+    }
+
+    try {
+      document.addEventListener('wpcf7mailsent', function () {
+        log('CF7 mail sent');
+      });
+      document.addEventListener('wpcf7submit', function (e) {
+        if (e && e.detail && e.detail.contactFormId) {
+          log('CF7 submit', e.detail.contactFormId);
+        }
+      });
+    } catch (e) {}
+
+    try {
+      if (window.gform && window.gform.addAction) {
+        window.gform.addAction('gform_post_render', function () {
+          setTimeout(fillAllForms, 100);
+        });
+      }
+    } catch (e) {}
+
+    try {
+      jQuery(document).on('elementor/popup/show', function () {
+        setTimeout(fillAllForms, 200);
+      });
+    } catch (e) {}
   }
 
   function applyRtClasses(root) {
@@ -185,19 +243,33 @@
     if (!document.body || !window.MutationObserver) return;
 
     var scheduled = false;
-    var observer = new MutationObserver(function () {
+    var observer = new MutationObserver(function (mutations) {
       if (scheduled) return;
       scheduled = true;
       setTimeout(function () {
         scheduled = false;
+        log('MutationObserver triggered, reapplying');
         applyRtClasses(document);
       }, 50);
     });
 
-    observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'id', 'name', 'value'] });
   }
 
-  window.addEventListener('DOMContentLoaded', function () {
+  function isDebug() {
+    try {
+      var c = window.rtQueue && window.rtQueue.__config;
+      return !!(c && c.debug);
+    } catch (e) { return false; }
+  }
+
+  function log(msg, data) {
+    if (!isDebug()) return;
+    try { console.log('[ReferrerTracker Bridge] ' + msg, data || ''); } catch (e) {}
+  }
+
+  function init() {
+    log('init');
     applyRtClasses(document);
     startObserver();
     bindSubmitSync();
@@ -206,7 +278,16 @@
     var interval = setInterval(function () {
       fillFieldsFromStorage(document);
       fills++;
-      if (fills >= 20) clearInterval(interval);
+      if (fills >= 20) {
+        clearInterval(interval);
+        log('retry interval finished after ' + fills + ' attempts');
+      }
     }, 500);
-  });
+  }
+
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    setTimeout(init, 0);
+  } else {
+    window.addEventListener('DOMContentLoaded', function () { init(); });
+  }
 })();
