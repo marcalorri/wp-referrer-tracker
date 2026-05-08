@@ -4,7 +4,7 @@ Tags: analytics, tracking, utm, wpforms, contact-form-7
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 0.4.1
+Stable tag: 0.4.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -103,6 +103,12 @@ Typical flow:
 3. The repository GitHub Action will automatically attach a ZIP asset with the correct plugin folder structure.
 
 == Changelog ==
+
+= 0.4.2 =
+* Improved WP Rocket compatibility with expanded automatic exclusions for minification, deferred JavaScript, and delayed JavaScript execution.
+* Added WP Rocket detection in the settings page with recommended exclusion patterns.
+* Prevent fallback logic from writing persistent `none/direct` attribution when the core script is delayed or unavailable.
+* Configure ReferrerTracker before loading the local core script and extend retry logic for delayed script execution.
 
 = 0.4.1 =
 * Fix admin settings notice to validate the renamed core file `assets/rt.min.js`.

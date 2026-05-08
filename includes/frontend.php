@@ -37,7 +37,14 @@ function referrertracker_script_loader_tag( $tag, $handle ) {
 function referrertracker_add_wp_rocket_exclusions() {
 	$exclude_patterns = array(
 		'referrertracker',
+		'referrertracker-core',
+		'referrertracker-bridge',
+		'referrertracker-wp-bridge.js',
 		'rt.min.js',
+		'/wp-content/plugins/referrertracker/',
+		'/wp-content/plugins/referrer-tracker-wp/',
+		'cdn.referrertracker.com',
+		'core.min.js',
 	);
 
 	foreach ( $exclude_patterns as $pattern ) {
@@ -127,10 +134,14 @@ function referrertracker_enqueue_scripts() {
 
 	$config_json = wp_json_encode( $config );
 
-	$inline = "(function(){" .
-		"var c=" . $config_json . ";window.rtQueue=window.rtQueue||[];window.rtQueue.__config=c;" .
+	$inline_before = "(function(){" .
+		"var c=" . $config_json . ";window.ReferrerTrackerConfig=c;window.rtQueue=window.rtQueue||[];window.rtQueue.__config=c;" .
+		"})();";
+
+	$inline_after = "(function(){" .
+		"var c=window.ReferrerTrackerConfig||" . $config_json . ";window.rtQueue=window.rtQueue||[];window.rtQueue.__config=c;" .
 		"var a=0;" .
-		"var m=50;" .
+		"var m=150;" .
 		"function t(){" .
 		"if(window.ReferrerTracker&&typeof window.ReferrerTracker.configure==='function'){" .
 		"if(!window.rtQueue||!window.rtQueue.__configured){" .
@@ -142,14 +153,7 @@ function referrertracker_enqueue_scripts() {
 		"}" .
 		"a++;" .
 		"if(a>=m){" .
-		"try{" .
-		"var e=Date.now()+c.storageExpireDays*24*60*60*1000;" .
-		"localStorage.setItem('rt_source',JSON.stringify({v:'none',e:e}));" .
-		"localStorage.setItem('rt_medium',JSON.stringify({v:'direct',e:e}));" .
-		"sessionStorage.setItem('rt_source','none');" .
-		"sessionStorage.setItem('rt_medium','direct');" .
-		"if(c.debug)console.log('[ReferrerTracker WP] Core not available after '+(a*100)+'ms, wrote defaults to storage');" .
-		"}catch(x){}" .
+		"if(c.debug)console.log('[ReferrerTracker WP] Core not available after '+(a*100)+'ms');" .
 		"return;" .
 		"}" .
 		"setTimeout(t,100);" .
@@ -157,5 +161,6 @@ function referrertracker_enqueue_scripts() {
 		"t();" .
 		"})();";
 
-	wp_add_inline_script( 'referrertracker-core', $inline, 'after' );
+	wp_add_inline_script( 'referrertracker-core', $inline_before, 'before' );
+	wp_add_inline_script( 'referrertracker-core', $inline_after, 'after' );
 }

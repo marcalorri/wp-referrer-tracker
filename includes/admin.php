@@ -191,6 +191,7 @@ function referrertracker_render_settings_page() {
 	echo '<h1>' . esc_html__( 'ReferrerTracker', 'referrertracker' ) . '</h1>';
 
 	referrertracker_render_general_instructions();
+	referrertracker_render_wp_rocket_recommendations();
 
 	echo '<form action="options.php" method="post">';
 	settings_fields( 'referrertracker' );
@@ -233,6 +234,58 @@ function referrertracker_render_general_instructions() {
 	echo '<p style="margin-top: 8px;">' . esc_html__( 'Documentation:', 'referrertracker' ) . ' ' . $docs_link . '<br />' . esc_html__( 'Implementation guide:', 'referrertracker' ) . ' ' . $implementation_link . '</p>';
 	echo '</details>';
 }
+
+function referrertracker_is_wp_rocket_detected() {
+	if ( defined( 'WP_ROCKET_VERSION' ) || defined( 'WP_ROCKET_PLUGIN_NAME' ) || class_exists( 'WP_Rocket\\Engine\\Optimization\\RUCSS\\Controller' ) ) {
+		return true;
+	}
+
+	if ( ! function_exists( 'is_plugin_active' ) ) {
+		include_once ABSPATH . 'wp-admin/includes/plugin.php';
+	}
+
+	if ( function_exists( 'is_plugin_active' ) && is_plugin_active( 'wp-rocket/wp-rocket.php' ) ) {
+		return true;
+	}
+
+	$plugins = get_plugins();
+	return is_array( $plugins ) && isset( $plugins['wp-rocket/wp-rocket.php'] );
+}
+
+function referrertracker_get_wp_rocket_exclusion_patterns() {
+	return array(
+		'referrertracker',
+		'referrertracker-core',
+		'referrertracker-bridge',
+		'referrertracker-wp-bridge.js',
+		'rt.min.js',
+		'/wp-content/plugins/referrertracker/',
+		'/wp-content/plugins/referrer-tracker-wp/',
+		'cdn.referrertracker.com',
+		'core.min.js',
+	);
+}
+
+function referrertracker_render_wp_rocket_recommendations() {
+	if ( ! referrertracker_is_wp_rocket_detected() ) {
+		return;
+	}
+
+	$patterns = implode( "\n", referrertracker_get_wp_rocket_exclusion_patterns() );
+
+	echo '<details open class="notice notice-warning" style="padding: 12px 12px 8px; cursor: default;">';
+	echo '<summary style="cursor: pointer; font-weight: 600; list-style: revert; padding: 4px 0;">' . esc_html__( 'WP Rocket detected: recommended JavaScript exclusions', 'referrertracker' ) . '</summary>';
+	echo '<p>' . esc_html__( 'To avoid losing attribution data, add these patterns in WP Rocket. Use the same list in all three JavaScript exclusion fields:', 'referrertracker' ) . '</p>';
+	echo '<ol>';
+	echo '<li><strong>' . esc_html__( 'Exclude JavaScript files from minification', 'referrertracker' ) . '</strong></li>';
+	echo '<li><strong>' . esc_html__( 'Excluded JavaScript files from Load JavaScript deferred', 'referrertracker' ) . '</strong></li>';
+	echo '<li><strong>' . esc_html__( 'Excluded JavaScript files from Delay JavaScript execution', 'referrertracker' ) . '</strong></li>';
+	echo '</ol>';
+	echo '<textarea readonly rows="9" style="width: 100%; max-width: 760px; font-family: monospace;">' . esc_textarea( $patterns ) . '</textarea>';
+	echo '<p>' . esc_html__( 'After saving WP Rocket settings, clear WP Rocket cache and any CDN/page cache.', 'referrertracker' ) . '</p>';
+	echo '</details>';
+}
+
 
 function referrertracker_render_tabs( $active_tab ) {
 	$base_url = admin_url( 'options-general.php?page=referrertracker' );
